@@ -31,8 +31,12 @@
       font-size: 28px;
     }
 
+    header div {
+      margin-top: 5px;
+    }
+
     .container {
-      max-width: 650px;
+      max-width: 700px;
       margin: auto;
       padding: 15px;
     }
@@ -59,7 +63,10 @@
       color: white;
     }
 
-    .profile-card {
+    .profile-card,
+    .chat-box,
+    .search-box,
+    .edit-box {
       background: white;
       border-radius: 18px;
       padding: 20px;
@@ -87,6 +94,13 @@
       display: flex;
       gap: 8px;
       margin-top: 18px;
+      flex-wrap: wrap;
+    }
+
+    .buttons button {
+      flex: 1;
+      min-width: 90px;
+      color: white;
     }
 
     button {
@@ -97,9 +111,13 @@
       cursor: pointer;
     }
 
-    .buttons button {
-      flex: 1;
-      color: white;
+    button:hover {
+      opacity: .85;
+    }
+
+    button:disabled {
+      opacity: .6;
+      cursor: default;
     }
 
     .like {
@@ -114,13 +132,26 @@
       background: #35b86b;
     }
 
-    button:hover {
-      opacity: .85;
+    .block {
+      background: #555;
     }
 
-    button:disabled {
-      opacity: .6;
-      cursor: default;
+    .danger {
+      background: #d93636;
+      color: white;
+    }
+
+    .save {
+      background: #35b86b;
+      color: white;
+      width: 100%;
+    }
+
+    .cancel {
+      background: #777;
+      color: white;
+      width: 100%;
+      margin-top: 8px;
     }
 
     #status {
@@ -156,14 +187,18 @@
     }
 
     .friend-row button {
-      background: #35b86b;
       color: white;
     }
 
-    .chat-box {
-      background: white;
-      border-radius: 18px;
-      padding: 15px;
+    .online {
+      color: #22a447;
+      font-weight: bold;
+      font-size: 13px;
+    }
+
+    .offline {
+      color: #888;
+      font-size: 13px;
     }
 
     .chat-header {
@@ -225,6 +260,67 @@
       color: white;
       margin-bottom: 10px;
     }
+
+    .search-box input,
+    .search-box select,
+    .edit-box input,
+    .edit-box select,
+    .edit-box textarea {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 15px;
+    }
+
+    .edit-box textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .search-title {
+      color: #ff4f81;
+      margin-top: 0;
+    }
+
+    .notification {
+      background: white;
+      border-left: 5px solid #ff4f81;
+      padding: 14px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+
+    .profile-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge {
+      background: #ff4f81;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+    @media(max-width:500px) {
+      .menu button {
+        font-size: 11px;
+        padding: 9px 3px;
+      }
+
+      .buttons {
+        flex-direction: column;
+      }
+
+      .buttons button {
+        width: 100%;
+      }
+    }
   </style>
 </head>
 
@@ -241,8 +337,12 @@
 
   <div class="menu">
     <button id="homeBtn" class="active" onclick="showHome()">🏠 Начало</button>
-    <button onclick="showLikes()">❤️ Харесвания</button>
-    <button onclick="showFriends()">👥 Приятели</button>
+    <button id="searchBtn" onclick="showSearch()">🔎 Търсене</button>
+    <button id="likesBtn" onclick="showLikes()">❤️ Харесвания</button>
+    <button id="friendsBtn" onclick="showFriends()">👥 Приятели</button>
+    <button id="chatsBtn" onclick="showChats()">💬 Чатове</button>
+    <button id="notificationsBtn" onclick="showNotifications()">🔔 Известия</button>
+    <button id="profileBtn" onclick="showMyProfile()">👤 Профил</button>
   </div>
 
   <div id="content"></div>
@@ -268,11 +368,12 @@ const supabaseClient =
 let currentUser = null;
 let currentChatUser = null;
 let currentChatName = "";
+let chatChannel = null;
 
 
-// =========================
+// ========================================
 // START
-// =========================
+// ========================================
 
 async function start() {
 
@@ -292,6 +393,8 @@ async function start() {
 
   currentUser = data.user;
 
+  await setOnline(true);
+
   document.getElementById("status").innerHTML =
     "Добре дошли! ❤️";
 
@@ -299,9 +402,31 @@ async function start() {
 }
 
 
-// =========================
+// ========================================
+// ONLINE
+// ========================================
+
+async function setOnline(value) {
+
+  if (!currentUser) return;
+
+  await supabaseClient
+    .from("profiles")
+    .update({
+      online: value,
+      last_seen: new Date().toISOString()
+    })
+    .eq("id", currentUser.id);
+}
+
+window.addEventListener("beforeunload", () => {
+  setOnline(false);
+});
+
+
+// ========================================
 // HOME
-// =========================
+// ========================================
 
 async function showHome() {
 
@@ -313,41 +438,98 @@ async function showHome() {
   container.innerHTML =
     '<div class="empty">Зареждане на профили...</div>';
 
+  const profiles =
+    await getOtherProfiles();
+
+  renderProfiles(profiles, container);
+}
+
+
+// ========================================
+// GET PROFILES
+// ========================================
+
+async function getOtherProfiles() {
+
   const { data, error } =
     await supabaseClient
       .from("profiles")
       .select("*")
-      .neq("id", currentUser.id);
+      .neq("id", currentUser.id)
+      .order("name", { ascending: true });
 
   if (error) {
 
     console.log(error);
 
-    container.innerHTML =
-      '<div class="empty">Грешка при зареждане на профилите.</div>';
-
-    return;
+    return [];
   }
+
+  const blocked = await getBlockedIds();
+
+  return (data || []).filter(
+    profile =>
+      !blocked.includes(profile.id)
+  );
+}
+
+
+// ========================================
+// BLOCKED IDS
+// ========================================
+
+async function getBlockedIds() {
+
+  const { data } =
+    await supabaseClient
+      .from("blocks")
+      .select("blocked_user_id")
+      .eq("user_id", currentUser.id);
+
+  return (data || [])
+    .map(x => x.blocked_user_id);
+}
+
+
+// ========================================
+// RENDER PROFILES
+// ========================================
+
+function renderProfiles(profiles, container) {
 
   container.innerHTML = "";
 
-  if (!data || data.length === 0) {
+  if (!profiles || profiles.length === 0) {
 
     container.innerHTML =
-      '<div class="empty">Все още няма други профили. ❤️</div>';
+      '<div class="empty">Все още няма подходящи профили. ❤️</div>';
 
     return;
   }
 
-  for (const profile of data) {
+  profiles.forEach(profile => {
 
     const card =
       document.createElement("div");
 
     card.className = "profile-card";
 
+    const onlineText =
+      profile.online
+        ? '<span class="online">🟢 Онлайн</span>'
+        : '<span class="offline">⚪ Не е онлайн</span>';
+
     card.innerHTML = `
-      <h2>${escapeHtml(profile.name || "Потребител")}</h2>
+
+      <div class="profile-top">
+
+        <h2>
+          ${escapeHtml(profile.name || "Потребител")}
+        </h2>
+
+        ${onlineText}
+
+      </div>
 
       <div class="info">
         🎂 Възраст:
@@ -392,24 +574,27 @@ async function showHome() {
 
         <button
           class="chat"
-          onclick="openChat(
-            '${profile.id}',
-            '${escapeHtml(profile.name || "Потребител")}'
-          )">
+          onclick="openChat('${profile.id}', ${jsString(profile.name || "Потребител")})">
           💬 Чат
+        </button>
+
+        <button
+          class="block"
+          onclick="blockUser('${profile.id}', ${jsString(profile.name || "Потребител")})">
+          🚫 Блокирай
         </button>
 
       </div>
     `;
 
     container.appendChild(card);
-  }
+  });
 }
 
 
-// =========================
+// ========================================
 // LIKE
-// =========================
+// ========================================
 
 async function likeUser(userId, button) {
 
@@ -427,9 +612,7 @@ async function likeUser(userId, button) {
 
     if (error.code === "23505") {
 
-      button.innerText =
-        "❤️ Харесано";
-
+      button.innerText = "❤️ Харесано";
       button.disabled = true;
 
       return;
@@ -442,16 +625,14 @@ async function likeUser(userId, button) {
     return;
   }
 
-  button.innerText =
-    "❤️ Харесано";
-
+  button.innerText = "❤️ Харесано";
   button.disabled = true;
 }
 
 
-// =========================
+// ========================================
 // FRIEND REQUEST
-// =========================
+// ========================================
 
 async function addFriend(userId, button) {
 
@@ -501,18 +682,163 @@ async function addFriend(userId, button) {
     return;
   }
 
-  button.innerText =
-    "✓ Изпратено";
-
+  button.innerText = "✓ Изпратено";
   button.disabled = true;
 }
 
 
-// =========================
-// LIKES
-// =========================
+// ========================================
+// SEARCH
+// ========================================
+
+async function showSearch() {
+
+  setActiveButton("searchBtn");
+
+  const container =
+    document.getElementById("content");
+
+  container.innerHTML = `
+
+    <div class="search-box">
+
+      <h2 class="search-title">
+        🔎 Търсене на хора
+      </h2>
+
+      <input
+        id="searchName"
+        type="text"
+        placeholder="Име..."
+      >
+
+      <input
+        id="searchCity"
+        type="text"
+        placeholder="Град..."
+      >
+
+      <input
+        id="searchMinAge"
+        type="number"
+        min="18"
+        placeholder="Минимална възраст"
+      >
+
+      <input
+        id="searchMaxAge"
+        type="number"
+        min="18"
+        placeholder="Максимална възраст"
+      >
+
+      <button
+        class="like"
+        style="width:100%;color:white"
+        onclick="performSearch()">
+        🔎 Търси
+      </button>
+
+    </div>
+
+    <div id="searchResults"></div>
+  `;
+
+  await performSearch();
+}
+
+
+// ========================================
+// PERFORM SEARCH
+// ========================================
+
+async function performSearch() {
+
+  const results =
+    document.getElementById("searchResults");
+
+  if (!results) return;
+
+  results.innerHTML =
+    '<div class="empty">Търсене...</div>';
+
+  let profiles =
+    await getOtherProfiles();
+
+  const name =
+    (document.getElementById("searchName")?.value || "")
+      .trim()
+      .toLowerCase();
+
+  const city =
+    (document.getElementById("searchCity")?.value || "")
+      .trim()
+      .toLowerCase();
+
+  const minAge =
+    parseInt(
+      document.getElementById("searchMinAge")?.value
+    );
+
+  const maxAge =
+    parseInt(
+      document.getElementById("searchMaxAge")?.value
+    );
+
+  profiles =
+    profiles.filter(profile => {
+
+      const profileName =
+        String(profile.name || "").toLowerCase();
+
+      const profileCity =
+        String(profile.city || "").toLowerCase();
+
+      const age =
+        parseInt(profile.age);
+
+      if (
+        name &&
+        !profileName.includes(name)
+      ) {
+        return false;
+      }
+
+      if (
+        city &&
+        !profileCity.includes(city)
+      ) {
+        return false;
+      }
+
+      if (
+        !isNaN(minAge) &&
+        (!isNaN(age) && age < minAge)
+      ) {
+        return false;
+      }
+
+      if (
+        !isNaN(maxAge) &&
+        (!isNaN(age) && age > maxAge)
+      ) {
+        return false;
+      }
+
+      return true;
+    });
+
+  renderProfiles(profiles, results);
+}
+
+
+// ========================================
+// MY LIKES
+// ========================================
 
 async function showLikes() {
+
+  setActiveButton("likesBtn");
 
   const container =
     document.getElementById("content");
@@ -536,16 +862,16 @@ async function showLikes() {
     return;
   }
 
+  container.innerHTML =
+    '<h2 style="color:#ff4f81">❤️ Моите харесвания</h2>';
+
   if (!data || data.length === 0) {
 
-    container.innerHTML =
+    container.innerHTML +=
       '<div class="empty">Все още не сте харесали никого. ❤️</div>';
 
     return;
   }
-
-  container.innerHTML =
-    '<h2 style="color:#ff4f81">❤️ Моите харесвания</h2>';
 
   for (const like of data) {
 
@@ -573,10 +899,8 @@ async function showLikes() {
       </div>
 
       <button
-        onclick="openChat(
-          '${profile.id}',
-          '${escapeHtml(profile.name || "Потребител")}'
-        )">
+        class="chat"
+        onclick="openChat('${profile.id}', ${jsString(profile.name || "Потребител")})">
         💬 Чат
       </button>
     `;
@@ -586,11 +910,100 @@ async function showLikes() {
 }
 
 
-// =========================
+// ========================================
+// WHO LIKED ME
+// ========================================
+
+async function showWhoLikedMe() {
+
+  const container =
+    document.getElementById("content");
+
+  container.innerHTML =
+    '<div class="empty">Зареждане...</div>';
+
+  const { data, error } =
+    await supabaseClient
+      .from("likes")
+      .select("user_id")
+      .eq("liked_user_id", currentUser.id);
+
+  if (error) {
+
+    console.log(error);
+
+    container.innerHTML =
+      '<div class="empty">Грешка при зареждане.</div>';
+
+    return;
+  }
+
+  container.innerHTML =
+    '<h2 style="color:#ff4f81">💗 Кой ме е харесал</h2>';
+
+  if (!data || data.length === 0) {
+
+    container.innerHTML +=
+      '<div class="empty">Все още няма харесвания.</div>';
+
+    return;
+  }
+
+  for (const like of data) {
+
+    const { data: profile } =
+      await supabaseClient
+        .from("profiles")
+        .select("*")
+        .eq("id", like.user_id)
+        .maybeSingle();
+
+    if (!profile) continue;
+
+    const row =
+      document.createElement("div");
+
+    row.className = "friend-row";
+
+    row.innerHTML = `
+
+      <div>
+        <strong>
+          ${escapeHtml(profile.name || "Потребител")}
+        </strong>
+
+        <br>
+
+        ${escapeHtml(profile.city || "")}
+      </div>
+
+      <div>
+        <button
+          class="like"
+          onclick="likeUser('${profile.id}', this)">
+          ❤️ Харесай
+        </button>
+
+        <button
+          class="chat"
+          onclick="openChat('${profile.id}', ${jsString(profile.name || "Потребител")})">
+          💬
+        </button>
+      </div>
+    `;
+
+    container.appendChild(row);
+  }
+}
+
+
+// ========================================
 // FRIENDS
-// =========================
+// ========================================
 
 async function showFriends() {
+
+  setActiveButton("friendsBtn");
 
   const container =
     document.getElementById("content");
@@ -611,7 +1024,7 @@ async function showFriends() {
     console.log(error);
 
     container.innerHTML =
-      '<div class="empty">Грешка при зареждане на приятелите.</div>';
+      '<div class="empty">Грешка при зареждане.</div>';
 
     return;
   }
@@ -659,6 +1072,7 @@ async function showFriends() {
       row.className = "friend-row";
 
       row.innerHTML = `
+
         <div>
           <strong>
             ${escapeHtml(profile.name || "Потребител")}
@@ -666,13 +1080,19 @@ async function showFriends() {
         </div>
 
         <div>
+
           <button
-            onclick="acceptFriend(
-              ${request.id},
-              this
-            )">
+            style="background:#35b86b;color:white"
+            onclick="acceptFriend(${request.id}, this)">
             ✓ Приеми
           </button>
+
+          <button
+            class="danger"
+            onclick="rejectFriend(${request.id}, this)">
+            ✕
+          </button>
+
         </div>
       `;
 
@@ -712,21 +1132,23 @@ async function showFriends() {
       row.className = "friend-row";
 
       row.innerHTML = `
+
         <div>
           <strong>
             ${escapeHtml(profile.name || "Потребител")}
           </strong>
+
           <br>
+
           ${escapeHtml(profile.city || "")}
         </div>
 
         <button
-          onclick="openChat(
-            '${profile.id}',
-            '${escapeHtml(profile.name || "Потребител")}'
-          )">
+          class="chat"
+          onclick="openChat('${profile.id}', ${jsString(profile.name || "Потребител")})">
           💬 Чат
         </button>
+
       `;
 
       container.appendChild(row);
@@ -744,9 +1166,9 @@ async function showFriends() {
 }
 
 
-// =========================
+// ========================================
 // ACCEPT FRIEND
-// =========================
+// ========================================
 
 async function acceptFriend(id, button) {
 
@@ -768,26 +1190,159 @@ async function acceptFriend(id, button) {
     return;
   }
 
-  button.innerText =
-    "✓ Прието";
-
+  button.innerText = "✓ Прието";
   button.disabled = true;
 
-  setTimeout(
-    showFriends,
-    500
-  );
+  setTimeout(showFriends, 400);
 }
 
 
-// =========================
+// ========================================
+// REJECT FRIEND
+// ========================================
+
+async function rejectFriend(id) {
+
+  const { error } =
+    await supabaseClient
+      .from("friends")
+      .delete()
+      .eq("id", id)
+      .eq("friend_id", currentUser.id);
+
+  if (error) {
+
+    console.log(error);
+
+    alert("Грешка при отказването.");
+
+    return;
+  }
+
+  showFriends();
+}
+
+
+// ========================================
+// CHATS
+// ========================================
+
+async function showChats() {
+
+  setActiveButton("chatsBtn");
+
+  const container =
+    document.getElementById("content");
+
+  container.innerHTML =
+    '<div class="empty">Зареждане на разговорите...</div>';
+
+  const { data, error } =
+    await supabaseClient
+      .from("messages")
+      .select("*")
+      .or(
+        `sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`
+      )
+      .order("created_at", { ascending: false });
+
+  if (error) {
+
+    console.log(error);
+
+    container.innerHTML =
+      '<div class="empty">Грешка при зареждане на чатовете.</div>';
+
+    return;
+  }
+
+  const users = new Map();
+
+  (data || []).forEach(message => {
+
+    const otherId =
+      message.sender_id === currentUser.id
+        ? message.receiver_id
+        : message.sender_id;
+
+    if (!users.has(otherId)) {
+      users.set(otherId, message);
+    }
+  });
+
+  container.innerHTML =
+    '<h2 style="color:#ff4f81">💬 Моите чатове</h2>';
+
+  if (users.size === 0) {
+
+    container.innerHTML +=
+      '<div class="empty">Все още нямате разговори.</div>';
+
+    return;
+  }
+
+  for (const [userId, lastMessage] of users) {
+
+    const { data: profile } =
+      await supabaseClient
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
+        .maybeSingle();
+
+    if (!profile) continue;
+
+    const row =
+      document.createElement("div");
+
+    row.className = "friend-row";
+
+    row.innerHTML = `
+
+      <div style="flex:1">
+
+        <strong>
+          ${escapeHtml(profile.name || "Потребител")}
+        </strong>
+
+        <br>
+
+        <span style="color:#777">
+          ${escapeHtml(
+            String(lastMessage.message || "").slice(0,60)
+          )}
+        </span>
+
+      </div>
+
+      <button
+        class="chat"
+        onclick="openChat('${profile.id}', ${jsString(profile.name || "Потребител")})">
+        💬 Отвори
+      </button>
+    `;
+
+    container.appendChild(row);
+  }
+}
+
+
+// ========================================
 // CHAT
-// =========================
+// ========================================
 
 async function openChat(userId, name) {
 
   currentChatUser = userId;
   currentChatName = name;
+
+  if (chatChannel) {
+
+    await supabaseClient
+      .removeChannel(chatChannel);
+
+    chatChannel = null;
+  }
 
   const container =
     document.getElementById("content");
@@ -798,8 +1353,8 @@ async function openChat(userId, name) {
 
       <button
         class="back"
-        onclick="showHome()">
-        ← Назад
+        onclick="showChats()">
+        ← Назад към чатовете
       </button>
 
       <div class="chat-header">
@@ -817,15 +1372,17 @@ async function openChat(userId, name) {
         <input
           id="messageInput"
           type="text"
+          maxlength="1000"
           placeholder="Напишете съобщение..."
           onkeydown="
-            if(event.key === 'Enter')
-            sendMessage();
+            if(event.key === 'Enter') {
+              event.preventDefault();
+              sendMessage();
+            }
           "
         >
 
-        <button
-          onclick="sendMessage()">
+        <button onclick="sendMessage()">
           ➤
         </button>
 
@@ -840,9 +1397,9 @@ async function openChat(userId, name) {
 }
 
 
-// =========================
+// ========================================
 // LOAD MESSAGES
-// =========================
+// ========================================
 
 async function loadMessages() {
 
@@ -878,7 +1435,7 @@ async function loadMessages() {
   if (!data || data.length === 0) {
 
     messagesBox.innerHTML =
-      '<div style="text-align:center;color:#888;">Все още няма съобщения.</div>';
+      '<div class="empty">Все още няма съобщения.</div>';
 
     return;
   }
@@ -889,9 +1446,9 @@ async function loadMessages() {
 }
 
 
-// =========================
+// ========================================
 // SEND MESSAGE
-// =========================
+// ========================================
 
 async function sendMessage() {
 
@@ -905,14 +1462,16 @@ async function sendMessage() {
 
   if (!message) return;
 
-  const { error } =
+  const { data, error } =
     await supabaseClient
       .from("messages")
       .insert({
         sender_id: currentUser.id,
         receiver_id: currentChatUser,
         message: message
-      });
+      })
+      .select()
+      .single();
 
   if (error) {
 
@@ -927,15 +1486,16 @@ async function sendMessage() {
 
   input.value = "";
 
-  await loadMessages();
+  if (data) {
+    addMessageToScreen(data);
+    scrollMessages();
+  }
 }
 
 
-// =========================
+// ========================================
 // REALTIME CHAT
-// =========================
-
-let chatChannel = null;
+// ========================================
 
 function subscribeToMessages() {
 
@@ -966,14 +1526,8 @@ function subscribeToMessages() {
             payload.new;
 
           if (
-            (
-              message.sender_id === currentUser.id &&
-              message.receiver_id === currentChatUser
-            ) ||
-            (
-              message.sender_id === currentChatUser &&
-              message.receiver_id === currentUser.id
-            )
+            message.sender_id === currentChatUser &&
+            message.receiver_id === currentUser.id
           ) {
 
             addMessageToScreen(message);
@@ -986,9 +1540,9 @@ function subscribeToMessages() {
 }
 
 
-// =========================
+// ========================================
 // MESSAGE DISPLAY
-// =========================
+// ========================================
 
 function addMessageToScreen(message) {
 
@@ -998,9 +1552,7 @@ function addMessageToScreen(message) {
   if (!box) return;
 
   const empty =
-    box.querySelector(
-      'div[style*="text-align:center"]'
-    );
+    box.querySelector(".empty");
 
   if (empty) {
     empty.remove();
@@ -1024,25 +1576,411 @@ function addMessageToScreen(message) {
 }
 
 
-// =========================
-// SCROLL CHAT
-// =========================
+// ========================================
+// PROFILE
+// ========================================
 
-function scrollMessages() {
+async function showMyProfile() {
 
-  const box =
-    document.getElementById("messages");
+  setActiveButton("profileBtn");
 
-  if (box) {
-    box.scrollTop =
-      box.scrollHeight;
+  const container =
+    document.getElementById("content");
+
+  const { data: profile, error } =
+    await supabaseClient
+      .from("profiles")
+      .select("*")
+      .eq("id", currentUser.id)
+      .maybeSingle();
+
+  if (error || !profile) {
+
+    container.innerHTML =
+      '<div class="empty">Профилът не е намерен.</div>';
+
+    return;
+  }
+
+  container.innerHTML = `
+
+    <div class="profile-card">
+
+      <h2>
+        👤 ${escapeHtml(profile.name || "Моят профил")}
+      </h2>
+
+      <div class="info">
+        🎂 Възраст: ${escapeHtml(profile.age || "—")}
+      </div>
+
+      <div class="info">
+        📍 Град: ${escapeHtml(profile.city || "—")}
+      </div>
+
+      <div class="info">
+        👤 Пол: ${escapeHtml(profile.gender || "—")}
+      </div>
+
+      <div class="info">
+        🔎 Търси: ${escapeHtml(profile.looking_for || "—")}
+      </div>
+
+      <div class="description">
+        ${escapeHtml(profile.description || "Няма описание.")}
+      </div>
+
+      <button
+        class="like"
+        style="width:100%;color:white;margin-top:15px"
+        onclick="editProfile()">
+        ✏️ Редактирай профила
+      </button>
+
+    </div>
+  `;
+}
+
+
+// ========================================
+// EDIT PROFILE
+// ========================================
+
+async function editProfile() {
+
+  const container =
+    document.getElementById("content");
+
+  const { data: profile } =
+    await supabaseClient
+      .from("profiles")
+      .select("*")
+      .eq("id", currentUser.id)
+      .maybeSingle();
+
+  if (!profile) return;
+
+  container.innerHTML = `
+
+    <div class="edit-box">
+
+      <h2 style="color:#ff4f81">
+        ✏️ Редактиране на профила
+      </h2>
+
+      <input
+        id="editName"
+        type="text"
+        placeholder="Име"
+        value="${escapeHtml(profile.name || "")}"
+      >
+
+      <input
+        id="editAge"
+        type="number"
+        min="18"
+        placeholder="Възраст"
+        value="${escapeHtml(profile.age || "")}"
+      >
+
+      <input
+        id="editCity"
+        type="text"
+        placeholder="Град"
+        value="${escapeHtml(profile.city || "")}"
+      >
+
+      <select id="editGender">
+        <option value="">Избери пол</option>
+        <option value="Жена">Жена</option>
+        <option value="Мъж">Мъж</option>
+      </select>
+
+      <select id="editLooking">
+        <option value="">Кого търсиш?</option>
+        <option value="Жена">Жена</option>
+        <option value="Мъж">Мъж</option>
+        <option value="Всички">Всички</option>
+      </select>
+
+      <textarea
+        id="editDescription"
+        placeholder="Описание..."
+      >${escapeHtml(profile.description || "")}</textarea>
+
+      <button
+        class="save"
+        onclick="saveProfile()">
+        💾 Запази промените
+      </button>
+
+      <button
+        class="cancel"
+        onclick="showMyProfile()">
+        ← Отказ
+      </button>
+
+    </div>
+  `;
+
+  document.getElementById("editGender").value =
+    profile.gender || "";
+
+  document.getElementById("editLooking").value =
+    profile.looking_for || "";
+}
+
+
+// ========================================
+// SAVE PROFILE
+// ========================================
+
+async function saveProfile() {
+
+  const name =
+    document.getElementById("editName").value.trim();
+
+  const age =
+    document.getElementById("editAge").value.trim();
+
+  const city =
+    document.getElementById("editCity").value.trim();
+
+  const gender =
+    document.getElementById("editGender").value;
+
+  const looking =
+    document.getElementById("editLooking").value;
+
+  const description =
+    document.getElementById("editDescription").value.trim();
+
+  if (!name) {
+
+    alert("Моля, въведете име.");
+
+    return;
+  }
+
+  const { error } =
+    await supabaseClient
+      .from("profiles")
+      .update({
+        name: name,
+        age: age,
+        city: city,
+        gender: gender,
+        looking_for: looking,
+        description: description
+      })
+      .eq("id", currentUser.id);
+
+  if (error) {
+
+    console.log(error);
+
+    alert(
+      "Профилът не може да бъде запазен."
+    );
+
+    return;
+  }
+
+  alert("Профилът е обновен! ❤️");
+
+  showMyProfile();
+}
+
+
+// ========================================
+// BLOCK USER
+// ========================================
+
+async function blockUser(userId, name) {
+
+  const confirmBlock =
+    confirm(
+      "Да блокираме ли " +
+      name +
+      "?"
+    );
+
+  if (!confirmBlock) return;
+
+  const { error } =
+    await supabaseClient
+      .from("blocks")
+      .insert({
+        user_id: currentUser.id,
+        blocked_user_id: userId
+      });
+
+  if (error) {
+
+    if (error.code === "23505") {
+
+      alert("Този потребител вече е блокиран.");
+
+      return;
+    }
+
+    console.log(error);
+
+    alert("Грешка при блокирането.");
+
+    return;
+  }
+
+  alert(
+    name +
+    " е блокиран."
+  );
+
+  showHome();
+}
+
+
+// ========================================
+// NOTIFICATIONS
+// ========================================
+
+async function showNotifications() {
+
+  setActiveButton("notificationsBtn");
+
+  const container =
+    document.getElementById("content");
+
+  container.innerHTML =
+    '<div class="empty">Зареждане...</div>';
+
+  const [
+    likesResult,
+    friendsResult,
+    messagesResult
+  ] = await Promise.all([
+
+    supabaseClient
+      .from("likes")
+      .select("user_id")
+      .eq("liked_user_id", currentUser.id),
+
+    supabaseClient
+      .from("friends")
+      .select("*")
+      .eq("friend_id", currentUser.id)
+      .eq("status", "pending"),
+
+    supabaseClient
+      .from("messages")
+      .select("*")
+      .eq("receiver_id", currentUser.id)
+      .order("created_at", { ascending:false })
+      .limit(20)
+
+  ]);
+
+  const likes =
+    likesResult.data || [];
+
+  const requests =
+    friendsResult.data || [];
+
+  const messages =
+    messagesResult.data || [];
+
+  container.innerHTML =
+    '<h2 style="color:#ff4f81">🔔 Известия</h2>';
+
+  if (
+    likes.length === 0 &&
+    requests.length === 0 &&
+    messages.length === 0
+  ) {
+
+    container.innerHTML +=
+      '<div class="empty">Няма нови известия. 🔔</div>';
+
+    return;
+  }
+
+  if (likes.length > 0) {
+
+    const notification =
+      document.createElement("div");
+
+    notification.className =
+      "notification";
+
+    notification.innerHTML = `
+      ❤️ Имате
+      <strong>${likes.length}</strong>
+      ново/нови харесване/я.
+      <br><br>
+      <button
+        class="like"
+        style="color:white"
+        onclick="showWhoLikedMe()">
+        Виж кой ме е харесал
+      </button>
+    `;
+
+    container.appendChild(notification);
+  }
+
+  if (requests.length > 0) {
+
+    const notification =
+      document.createElement("div");
+
+    notification.className =
+      "notification";
+
+    notification.innerHTML = `
+      👥 Имате
+      <strong>${requests.length}</strong>
+      нова/нови покана/и за приятелство.
+      <br><br>
+      <button
+        class="friend"
+        style="color:white"
+        onclick="showFriends()">
+        Виж поканите
+      </button>
+    `;
+
+    container.appendChild(notification);
+  }
+
+  if (messages.length > 0) {
+
+    const notification =
+      document.createElement("div");
+
+    notification.className =
+      "notification";
+
+    notification.innerHTML = `
+      💬 Имате
+      <strong>${messages.length}</strong>
+      последни входящи съобщения.
+      <br><br>
+      <button
+        class="chat"
+        style="color:white"
+        onclick="showChats()">
+        Виж чатовете
+      </button>
+    `;
+
+    container.appendChild(notification);
   }
 }
 
 
-// =========================
-// ACTIVE MENU
-// =========================
+// ========================================
+// MENU
+// ========================================
 
 function setActiveButton(id) {
 
@@ -1061,11 +1999,34 @@ function setActiveButton(id) {
 }
 
 
-// =========================
+// ========================================
+// SCROLL
+// ========================================
+
+function scrollMessages() {
+
+  const box =
+    document.getElementById("messages");
+
+  if (box) {
+    box.scrollTop =
+      box.scrollHeight;
+  }
+}
+
+
+// ========================================
 // LOGOUT
-// =========================
+// ========================================
 
 async function logout() {
+
+  await setOnline(false);
+
+  if (chatChannel) {
+    await supabaseClient
+      .removeChannel(chatChannel);
+  }
 
   await supabaseClient.auth.signOut();
 
@@ -1073,9 +2034,9 @@ async function logout() {
 }
 
 
-// =========================
-// SECURITY
-// =========================
+// ========================================
+// HTML SECURITY
+// ========================================
 
 function escapeHtml(value) {
 
@@ -1089,9 +2050,24 @@ function escapeHtml(value) {
 }
 
 
-// =========================
+// ========================================
+// JAVASCRIPT STRING SECURITY
+// ========================================
+
+function jsString(value) {
+
+  return JSON.stringify(
+    String(value)
+      .replaceAll("\\", "\\\\")
+      .replaceAll("\n", " ")
+      .replaceAll("\r", " ")
+  );
+}
+
+
+// ========================================
 // START
-// =========================
+// ========================================
 
 start();
 
