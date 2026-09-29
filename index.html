@@ -15,102 +15,91 @@
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #ffe6f0, #f5e6ff);
+      background: linear-gradient(135deg, #ff5f9e, #8e44ad);
       min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       padding: 20px;
     }
 
-    .container {
-      max-width: 500px;
-      margin: auto;
+    .box {
+      width: 100%;
+      max-width: 430px;
+      background: white;
+      padding: 25px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.2);
     }
 
     h1 {
       text-align: center;
-      color: #d63384;
-      font-size: 32px;
-      margin-bottom: 8px;
+      color: #e83e8c;
+      margin-top: 0;
     }
 
-    .subtitle {
+    h2 {
       text-align: center;
-      color: #666;
-      margin-bottom: 25px;
+      color: #555;
     }
 
-    .card {
-      background: white;
-      border-radius: 20px;
-      padding: 25px;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.10);
-    }
-
-    label {
-      display: block;
-      margin-top: 14px;
-      margin-bottom: 6px;
-      font-weight: bold;
-      color: #444;
-    }
-
-    input, select, textarea {
+    input, select, textarea, button {
       width: 100%;
       padding: 13px;
-      border: 1px solid #ddd;
+      margin-top: 10px;
       border-radius: 10px;
+      border: 1px solid #ddd;
       font-size: 16px;
-      background: #fff;
     }
 
     textarea {
-      min-height: 100px;
+      min-height: 90px;
       resize: vertical;
     }
 
     button {
-      width: 100%;
-      margin-top: 22px;
-      padding: 14px;
-      border: none;
-      border-radius: 12px;
-      background: #d63384;
+      background: #e83e8c;
       color: white;
-      font-size: 17px;
+      border: none;
       font-weight: bold;
       cursor: pointer;
     }
 
     button:hover {
-      background: #b82b70;
+      background: #d63384;
+    }
+
+    .hidden {
+      display: none;
     }
 
     .message {
-      margin-top: 15px;
       text-align: center;
+      margin-top: 15px;
       font-weight: bold;
     }
 
+    .success {
+      color: green;
+    }
+
+    .error {
+      color: red;
+    }
+
     .profile {
-      display: none;
+      text-align: center;
+    }
+
+    .profile-card {
+      background: #fff0f6;
+      padding: 20px;
+      border-radius: 15px;
       margin-top: 20px;
-      background: white;
-      border-radius: 20px;
-      padding: 25px;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.10);
-    }
-
-    .profile h2 {
-      color: #d63384;
-      margin-top: 0;
-    }
-
-    .profile p {
-      margin: 10px 0;
-      color: #444;
     }
 
     .logout {
-      background: #777;
+      background: #555;
       margin-top: 15px;
     }
   </style>
@@ -118,68 +107,66 @@
 
 <body>
 
-<div class="container">
+<div class="box">
 
   <h1>💕 Запознай.me</h1>
-  <div class="subtitle">Създай своя профил и се запознай с нови хора</div>
 
-  <div class="card" id="registerCard">
+  <!-- РЕГИСТРАЦИЯ -->
+  <div id="registerBox">
 
     <h2>Създай профил</h2>
 
-    <label>Име</label>
-    <input type="text" id="name" placeholder="Твоето име">
+    <input id="name" type="text" placeholder="Име">
 
-    <label>Възраст</label>
-    <input type="number" id="age" placeholder="Възраст">
+    <input id="age" type="number" placeholder="Възраст" min="18">
 
-    <label>Град</label>
-    <input type="text" id="city" placeholder="Твоят град">
+    <input id="city" type="text" placeholder="Град">
 
-    <label>Пол</label>
     <select id="gender">
-      <option value="">Избери</option>
+      <option value="">Пол</option>
       <option value="Жена">Жена</option>
       <option value="Мъж">Мъж</option>
+      <option value="Друго">Друго</option>
     </select>
 
-    <label>Кого търсиш?</label>
     <select id="looking_for">
-      <option value="">Избери</option>
+      <option value="">Кого търсиш?</option>
       <option value="Мъж">Мъж</option>
       <option value="Жена">Жена</option>
       <option value="Всички">Всички</option>
     </select>
 
-    <label>За теб</label>
     <textarea id="description"
-      placeholder="Напиши нещо за себе си..."></textarea>
+      placeholder="Разкажи малко за себе си..."></textarea>
 
-    <label>Имейл</label>
-    <input type="email" id="email" placeholder="example@email.com">
+    <input id="email" type="email" placeholder="Имейл">
 
-    <label>Парола</label>
-    <input type="password" id="password" placeholder="Минимум 6 символа">
+    <input id="password" type="password" placeholder="Парола">
 
-    <label>Потвърди паролата</label>
-    <input type="password" id="confirmPassword" placeholder="Повтори паролата">
+    <input id="confirmPassword" type="password"
+      placeholder="Повтори паролата">
 
-    <button onclick="register()">💕 Създай профил</button>
+    <button onclick="register()">Регистрация</button>
 
-    <div class="message" id="message"></div>
+    <div id="message" class="message"></div>
 
   </div>
 
-  <div class="profile" id="profile">
+
+  <!-- ПРОФИЛ -->
+  <div id="profileBox" class="hidden profile">
 
     <h2>💕 Твоят профил</h2>
 
-    <p><strong>Име:</strong> <span id="pName"></span></p>
-    <p><strong>Възраст:</strong> <span id="pAge"></span></p>
-    <p><strong>Град:</strong> <span id="pCity"></span></p>
-    <p><strong>Пол:</strong> <span id="pGender"></span></p>
-    <p><strong>Търси:</strong> <span id="pLooking"></span></p>
-    <p><strong>За мен:</strong> <span id="pDescription"></span></p>
+    <div class="profile-card">
+
+      <h2 id="profileName"></h2>
+
+      <p id="profileInfo"></p>
+
+      <p id="profileDescription"></p>
+
+    </div>
 
     <button class="logout" onclick="logout()">Изход</button>
 
@@ -187,232 +174,275 @@
 
 </div>
 
+
 <script>
 
-const SUPABASE_URL =
-  "https://shlwyiawfyyzyapcfmcu.supabase.co";
+  // SUPABASE
+  const SUPABASE_URL =
+    "https://shlwyiawfyyzyapcfmcu.supabase.co";
 
-const SUPABASE_KEY =
-  "sb_publishable__XLJp2i5KQoRg03MeEs_VQ_9-mg5gLD";
+  const SUPABASE_KEY =
+    "sb_publishable__XLJp2i5KQoRg03MeEs_VQ_9-mg5gLD";
 
-const supabaseClient =
-  window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-  );
-
-
-async function register() {
-
-  const name =
-    document.getElementById("name").value.trim();
-
-  const age =
-    document.getElementById("age").value;
-
-  const city =
-    document.getElementById("city").value.trim();
-
-  const gender =
-    document.getElementById("gender").value;
-
-  const looking_for =
-    document.getElementById("looking_for").value;
-
-  const description =
-    document.getElementById("description").value.trim();
-
-  const email =
-    document.getElementById("email").value.trim();
-
-  const password =
-    document.getElementById("password").value;
-
-  const confirmPassword =
-    document.getElementById("confirmPassword").value;
-
-  const message =
-    document.getElementById("message");
+  const supabaseClient =
+    supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
 
 
-  if (!name || !age || !city || !gender ||
-      !looking_for || !email || !password) {
+  // РЕГИСТРАЦИЯ
+  async function register() {
 
-    message.style.color = "red";
-    message.textContent =
-      "Моля, попълни всички задължителни полета.";
+    const name =
+      document.getElementById("name").value.trim();
 
-    return;
-  }
+    const age =
+      document.getElementById("age").value;
+
+    const city =
+      document.getElementById("city").value.trim();
+
+    const gender =
+      document.getElementById("gender").value;
+
+    const looking_for =
+      document.getElementById("looking_for").value;
+
+    const description =
+      document.getElementById("description").value.trim();
+
+    const email =
+      document.getElementById("email").value.trim();
+
+    const password =
+      document.getElementById("password").value;
+
+    const confirmPassword =
+      document.getElementById("confirmPassword").value;
+
+    const message =
+      document.getElementById("message");
 
 
-  if (password !== confirmPassword) {
+    // ПРОВЕРКИ
 
-    message.style.color = "red";
-    message.textContent =
-      "Паролите не съвпадат.";
-
-    return;
-  }
-
-
-  if (password.length < 6) {
-
-    message.style.color = "red";
-    message.textContent =
-      "Паролата трябва да е поне 6 символа.";
-
-    return;
-  }
+    if (
+      !name ||
+      !age ||
+      !city ||
+      !gender ||
+      !looking_for ||
+      !email ||
+      !password
+    ) {
+      message.className = "message error";
+      message.innerText =
+        "Моля, попълни всички задължителни полета.";
+      return;
+    }
 
 
-  message.style.color = "#555";
-  message.textContent = "Създавам профила...";
+    if (Number(age) < 18) {
+      message.className = "message error";
+      message.innerText =
+        "Регистрацията е само за лица над 18 години.";
+      return;
+    }
 
 
-  const { data: authData, error: authError } =
-    await supabaseClient.auth.signUp({
+    if (password !== confirmPassword) {
+      message.className = "message error";
+      message.innerText =
+        "Паролите не съвпадат.";
+      return;
+    }
+
+
+    if (password.length < 6) {
+      message.className = "message error";
+      message.innerText =
+        "Паролата трябва да е поне 6 символа.";
+      return;
+    }
+
+
+    message.className = "message";
+    message.innerText =
+      "Създаваме профила...";
+
+
+    // СЪЗДАВАНЕ НА USER
+    const {
+      data: authData,
+      error: authError
+    } = await supabaseClient.auth.signUp({
       email: email,
       password: password
     });
 
 
-  if (authError) {
+    if (authError) {
 
-    message.style.color = "red";
-    message.textContent =
-      authError.message;
+      message.className = "message error";
 
-    return;
-  }
+      message.innerText =
+        authError.message;
 
-
-  if (!authData.user) {
-
-    message.style.color = "red";
-    message.textContent =
-      "Не успяхме да създадем потребителя.";
-
-    return;
-  }
+      return;
+    }
 
 
-  const { error: profileError } =
-    await supabaseClient
+    if (!authData.user) {
+
+      message.className = "message error";
+
+      message.innerText =
+        "Потребителят не беше създаден.";
+
+      return;
+    }
+
+
+    // ЗАПИСВАНЕ В PROFILES
+    const {
+      error: profileError
+    } = await supabaseClient
       .from("profiles")
       .insert({
 
         id: authData.user.id,
+
         name: name,
+
         age: Number(age),
+
         city: city,
+
         gender: gender,
+
         looking_for: looking_for,
-        description: description
+
+        description: description,
+
+        email: email
 
       });
 
 
-  if (profileError) {
+    if (profileError) {
 
-    message.style.color = "red";
-    message.textContent =
-      "Потребителят е създаден, но профилът не беше записан: "
-      + profileError.message;
+      console.error(profileError);
 
-    return;
+      message.className =
+        "message error";
+
+      message.innerText =
+        "Потребителят е създаден, но профилът не беше записан: "
+        + profileError.message;
+
+      return;
+    }
+
+
+    // УСПЕШНО
+    message.className =
+      "message success";
+
+    message.innerText =
+      "Профилът е създаден успешно! ❤️";
+
+
+    setTimeout(() => {
+      showProfile({
+        name,
+        age,
+        city,
+        gender,
+        looking_for,
+        description
+      });
+    }, 1000);
+
   }
 
 
-  message.style.color = "green";
-  message.textContent =
-    "💕 Профилът е създаден успешно!";
+  // ПОКАЗВАНЕ НА ПРОФИЛА
+  function showProfile(profile) {
+
+    document
+      .getElementById("registerBox")
+      .classList.add("hidden");
+
+    document
+      .getElementById("profileBox")
+      .classList.remove("hidden");
 
 
-  showProfile({
-
-    name: name,
-    age: age,
-    city: city,
-    gender: gender,
-    looking_for: looking_for,
-    description: description
-
-  });
-
-}
+    document.getElementById("profileName")
+      .innerText =
+      profile.name;
 
 
-function showProfile(profileData) {
-
-  document.getElementById("registerCard").style.display =
-    "none";
-
-  document.getElementById("profile").style.display =
-    "block";
-
-
-  document.getElementById("pName").textContent =
-    profileData.name;
-
-  document.getElementById("pAge").textContent =
-    profileData.age;
-
-  document.getElementById("pCity").textContent =
-    profileData.city;
-
-  document.getElementById("pGender").textContent =
-    profileData.gender;
-
-  document.getElementById("pLooking").textContent =
-    profileData.looking_for;
-
-  document.getElementById("pDescription").textContent =
-    profileData.description || "Няма добавено описание.";
-
-}
+    document.getElementById("profileInfo")
+      .innerText =
+      profile.age +
+      " г. • " +
+      profile.city +
+      " • " +
+      profile.gender;
 
 
-async function logout() {
-
-  await supabaseClient.auth.signOut();
-
-  location.reload();
-
-}
-
-
-async function loadProfile() {
-
-  const {
-    data: { user }
-  } = await supabaseClient.auth.getUser();
-
-
-  if (!user) {
-    return;
+    document.getElementById("profileDescription")
+      .innerText =
+      profile.description ||
+      "Все още няма описание.";
   }
 
 
-  const { data, error } =
-    await supabaseClient
+  // ПРОВЕРКА ПРИ ОТВАРЯНЕ
+  async function checkUser() {
+
+    const {
+      data
+    } = await supabaseClient.auth.getUser();
+
+
+    if (!data.user) {
+      return;
+    }
+
+
+    const {
+      data: profile,
+      error
+    } = await supabaseClient
       .from("profiles")
       .select("*")
-      .eq("id", user.id)
+      .eq("id", data.user.id)
       .single();
 
 
-  if (error || !data) {
-    return;
+    if (!error && profile) {
+
+      showProfile(profile);
+
+    }
+
   }
 
 
-  showProfile(data);
+  // ИЗХОД
+  async function logout() {
 
-}
+    await supabaseClient.auth.signOut();
+
+    location.reload();
+
+  }
 
 
-loadProfile();
+  checkUser();
 
 </script>
 
