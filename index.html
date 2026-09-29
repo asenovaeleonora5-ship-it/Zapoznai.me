@@ -1,8 +1,13 @@
-<!DOCTYPE html><html lang="bg">
+<!DOCTYPE html>
+<html lang="bg">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Запознай.me</title>  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>  <style>
+  <title>Запознай.me</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
     * {
       box-sizing: border-box;
     }
@@ -17,39 +22,95 @@
     header {
       background: linear-gradient(135deg, #ff4f9a, #8e44ad);
       color: white;
-      padding: 18px;
+      padding: 22px 15px;
       text-align: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,.15);
     }
 
     header h1 {
       margin: 0;
-      font-size: 28px;
+      font-size: 30px;
     }
 
     header p {
-      margin: 5px 0 0;
-      opacity: .9;
+      margin: 6px 0 0;
     }
 
     .container {
       max-width: 700px;
       margin: 20px auto;
-      padding: 0 15px 90px;
+      padding: 0 15px 40px;
     }
 
-    .welcome {
+    .box {
       background: white;
       border-radius: 18px;
       padding: 22px;
       margin-bottom: 18px;
       box-shadow: 0 3px 12px rgba(0,0,0,.08);
+    }
+
+    h2 {
+      color: #8e44ad;
       text-align: center;
     }
 
-    .welcome h2 {
-      margin-top: 0;
-      color: #8e44ad;
+    label {
+      display: block;
+      margin-top: 12px;
+      font-weight: bold;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 13px;
+      margin-top: 6px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    button.main {
+      width: 100%;
+      padding: 14px;
+      margin-top: 18px;
+      border: 0;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #ff4f9a, #8e44ad);
+      color: white;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      width: 100%;
+      padding: 13px;
+      margin-top: 10px;
+      border: 0;
+      border-radius: 12px;
+      background: #eee;
+      color: #555;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .message {
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 10px;
+      text-align: center;
+      font-weight: bold;
     }
 
     .menu {
@@ -65,20 +126,14 @@
       text-align: center;
       box-shadow: 0 3px 12px rgba(0,0,0,.08);
       cursor: pointer;
-      transition: .2s;
-    }
-
-    .card:hover {
-      transform: translateY(-3px);
     }
 
     .icon {
       font-size: 38px;
-      margin-bottom: 8px;
     }
 
     .card h3 {
-      margin: 5px 0;
+      margin: 7px 0;
       color: #8e44ad;
     }
 
@@ -88,16 +143,28 @@
       font-size: 14px;
     }
 
+    .profile {
+      border: 1px solid #eee;
+      border-radius: 14px;
+      padding: 15px;
+      margin-top: 12px;
+      background: #fff;
+    }
+
+    .profile h3 {
+      color: #8e44ad;
+      margin-top: 0;
+    }
+
     .logout {
-      margin-top: 20px;
       width: 100%;
       padding: 14px;
+      margin-top: 20px;
       border: 0;
       border-radius: 12px;
       background: #444;
       color: white;
       font-size: 16px;
-      cursor: pointer;
     }
 
     .bottom {
@@ -108,21 +175,20 @@
       background: white;
       display: flex;
       justify-content: space-around;
-      padding: 10px 5px;
+      padding: 9px 5px;
       box-shadow: 0 -2px 10px rgba(0,0,0,.12);
     }
 
     .bottom button {
       border: 0;
       background: none;
-      font-size: 13px;
+      font-size: 12px;
       color: #555;
-      cursor: pointer;
     }
 
     .bottom span {
       display: block;
-      font-size: 24px;
+      font-size: 23px;
     }
 
     @media (max-width: 450px) {
@@ -130,69 +196,395 @@
         grid-template-columns: 1fr 1fr;
       }
     }
-  </style></head><body><header>
+  </style>
+</head>
+
+<body>
+
+<header>
   <h1>💗 Запознай.me</h1>
   <p>Нови хора. Нови приятелства. Нова любов.</p>
-</header><div class="container">  <div class="welcome">
-    <h2>Добре дошъл! ❤️</h2>
-    <p id="welcomeText">Зареждаме твоя профил...</p>
-  </div>  <div class="menu"><div class="card" onclick="openProfile()">
-  <div class="icon">👤</div>
-  <h3>Моят профил</h3>
-  <p>Виж и редактирай профила си</p>
+</header>
+
+<div class="container">
+
+  <!-- ВХОД / РЕГИСТРАЦИЯ -->
+  <div id="authSection" class="box">
+
+    <div id="loginBox">
+      <h2>Вход ❤️</h2>
+
+      <label>Имейл</label>
+      <input id="loginEmail" type="email" placeholder="Твоят имейл">
+
+      <label>Парола</label>
+      <input id="loginPassword" type="password" placeholder="Твоята парола">
+
+      <button class="main" onclick="login()">Вход</button>
+
+      <button class="secondary" onclick="showRegister()">
+        Нямаш профил? Регистрация
+      </button>
+
+      <div id="loginMessage"></div>
+    </div>
+
+
+    <div id="registerBox" class="hidden">
+      <h2>Създай профил 💗</h2>
+
+      <label>Име</label>
+      <input id="regName" type="text" placeholder="Твоето име">
+
+      <label>Възраст</label>
+      <input id="regAge" type="number" min="18" max="100" placeholder="Възраст">
+
+      <label>Град</label>
+      <input id="regCity" type="text" placeholder="Твоят град">
+
+      <label>Пол</label>
+      <select id="regGender">
+        <option value="">Избери</option>
+        <option value="Жена">Жена</option>
+        <option value="Мъж">Мъж</option>
+        <option value="Друго">Друго</option>
+      </select>
+
+      <label>Кого търсиш?</label>
+      <select id="regLooking">
+        <option value="">Избери</option>
+        <option value="Мъж">Мъж</option>
+        <option value="Жена">Жена</option>
+        <option value="Всички">Всички</option>
+      </select>
+
+      <label>Описание</label>
+      <textarea id="regDescription"
+        placeholder="Разкажи малко за себе си..."></textarea>
+
+      <label>Имейл</label>
+      <input id="regEmail" type="email" placeholder="Имейл">
+
+      <label>Парола</label>
+      <input id="regPassword" type="password" placeholder="Минимум 6 символа">
+
+      <label>Потвърди паролата</label>
+      <input id="regPassword2" type="password" placeholder="Повтори паролата">
+
+      <button class="main" onclick="register()">
+        Създай профил
+      </button>
+
+      <button class="secondary" onclick="showLogin()">
+        Вече имам профил → Вход
+      </button>
+
+      <div id="registerMessage"></div>
+    </div>
+
+  </div>
+
+
+  <!-- НАЧАЛНА СТРАНИЦА -->
+  <div id="homeSection" class="hidden">
+
+    <div class="box">
+      <h2>Добре дошъл! ❤️</h2>
+      <p id="welcomeText">Зареждаме твоя профил...</p>
+    </div>
+
+    <div class="menu">
+
+      <div class="card" onclick="openProfile()">
+        <div class="icon">👤</div>
+        <h3>Моят профил</h3>
+        <p>Виж профила си</p>
+      </div>
+
+      <div class="card" onclick="searchPeople()">
+        <div class="icon">🔎</div>
+        <h3>Търси хора</h3>
+        <p>Открий нови хора</p>
+      </div>
+
+      <div class="card" onclick="showLikes()">
+        <div class="icon">❤️</div>
+        <h3>Харесвания</h3>
+        <p>Кой те е харесал</p>
+      </div>
+
+      <div class="card" onclick="showFriends()">
+        <div class="icon">👥</div>
+        <h3>Приятели</h3>
+        <p>Твоите приятели</p>
+      </div>
+
+      <div class="card" onclick="openChat()">
+        <div class="icon">💬</div>
+        <h3>Чат</h3>
+        <p>Пиши на хора</p>
+      </div>
+
+      <div class="card" onclick="showNotifications()">
+        <div class="icon">🔔</div>
+        <h3>Известия</h3>
+        <p>Твоите известия</p>
+      </div>
+
+    </div>
+
+    <button class="logout" onclick="logout()">🚪 Изход</button>
+
+  </div>
+
 </div>
 
-<div class="card" onclick="searchPeople()">
-  <div class="icon">🔎</div>
-  <h3>Търси хора</h3>
-  <p>Открий нови хора</p>
-</div>
 
-<div class="card" onclick="showLikes()">
-  <div class="icon">❤️</div>
-  <h3>Харесвания</h3>
-  <p>Кой те е харесал</p>
-</div>
+<div id="bottomMenu" class="bottom hidden">
 
-<div class="card" onclick="showFriends()">
-  <div class="icon">👥</div>
-  <h3>Приятели</h3>
-  <p>Твоите приятели</p>
-</div>
-
-<div class="card" onclick="openChat()">
-  <div class="icon">💬</div>
-  <h3>Чат</h3>
-  <p>Пиши на приятели</p>
-</div>
-
-<div class="card" onclick="showNotifications()">
-  <div class="icon">🔔</div>
-  <h3>Известия</h3>
-  <p>Нови известия</p>
-</div>
-
-  </div><button class="logout" onclick="logout()">🚪 Изход</button>
-
-</div><div class="bottom">
   <button onclick="goHome()">
-    <span>🏠</span>Начало
-  </button>  <button onclick="searchPeople()">
-    <span>🔎</span>Търси
-  </button>  <button onclick="openChat()">
-    <span>💬</span>Чат
-  </button>  <button onclick="openProfile()">
-    <span>👤</span>Профил
+    <span>🏠</span>
+    Начало
   </button>
-</div><script>
 
-  const SUPABASE_URL = "https://shlwyiawfyyzyapcfmcu.supabase.co";
-  const SUPABASE_KEY = "sb_publishable__XLJp2i5KQoRg03MeEs_VQ_9-mg5gLD";
+  <button onclick="searchPeople()">
+    <span>🔎</span>
+    Търси
+  </button>
 
-  const supabaseClient = supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-  );
+  <button onclick="openChat()">
+    <span>💬</span>
+    Чат
+  </button>
+
+  <button onclick="openProfile()">
+    <span>👤</span>
+    Профил
+  </button>
+
+</div>
+
+
+<script>
+
+  const SUPABASE_URL =
+    "https://shlwyiawfyyzyapcfmcu.supabase.co";
+
+  const SUPABASE_KEY =
+    "sb_publishable__XLJp2i5KQoRg03MeEs_VQ_9-mg5gLD";
+
+  const supabaseClient =
+    supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+
+  function showMessage(element, text, success = false) {
+    element.innerText = text;
+    element.className = "message";
+    element.style.background = success ? "#e8f8ee" : "#ffe8ee";
+    element.style.color = success ? "#18733a" : "#a40035";
+  }
+
+
+  function showRegister() {
+    document.getElementById("loginBox").classList.add("hidden");
+    document.getElementById("registerBox").classList.remove("hidden");
+  }
+
+
+  function showLogin() {
+    document.getElementById("registerBox").classList.add("hidden");
+    document.getElementById("loginBox").classList.remove("hidden");
+  }
+
+
+  async function register() {
+
+    const name =
+      document.getElementById("regName").value.trim();
+
+    const age =
+      document.getElementById("regAge").value;
+
+    const city =
+      document.getElementById("regCity").value.trim();
+
+    const gender =
+      document.getElementById("regGender").value;
+
+    const looking =
+      document.getElementById("regLooking").value;
+
+    const description =
+      document.getElementById("regDescription").value.trim();
+
+    const email =
+      document.getElementById("regEmail").value.trim();
+
+    const password =
+      document.getElementById("regPassword").value;
+
+    const password2 =
+      document.getElementById("regPassword2").value;
+
+    const msg =
+      document.getElementById("registerMessage");
+
+
+    if (!name || !age || !city || !gender ||
+        !looking || !email || !password) {
+
+      showMessage(msg, "Моля, попълни всички задължителни полета.");
+      return;
+    }
+
+
+    if (Number(age) < 18) {
+      showMessage(msg, "Регистрацията е само за лица над 18 години.");
+      return;
+    }
+
+
+    if (password.length < 6) {
+      showMessage(msg, "Паролата трябва да е поне 6 символа.");
+      return;
+    }
+
+
+    if (password !== password2) {
+      showMessage(msg, "Паролите не съвпадат.");
+      return;
+    }
+
+
+    showMessage(msg, "Създаваме профила...", true);
+
+
+    const {
+      data,
+      error
+    } = await supabaseClient.auth.signUp({
+      email: email,
+      password: password
+    });
+
+
+    if (error) {
+      showMessage(msg, error.message);
+      return;
+    }
+
+
+    if (!data.user) {
+      showMessage(
+        msg,
+        "Потребителят не беше създаден. Опитай отново."
+      );
+      return;
+    }
+
+
+    /*
+      ВАЖНО:
+      Тук НЕ записваме email в profiles.
+      Записваме само колоните на профила.
+    */
+
+    const profileData = {
+      id: data.user.id,
+      name: name,
+      age: Number(age),
+      city: city,
+      gender: gender,
+      looking_for: looking,
+      description: description
+    };
+
+
+    const {
+      error: profileError
+    } = await supabaseClient
+      .from("profiles")
+      .insert(profileData);
+
+
+    if (profileError) {
+
+      showMessage(
+        msg,
+        "Потребителят е създаден, но профилът не беше записан: "
+        + profileError.message
+      );
+
+      return;
+    }
+
+
+    showMessage(
+      msg,
+      "Профилът е създаден успешно! ❤️",
+      true
+    );
+
+
+    setTimeout(() => {
+      showHome();
+    }, 1000);
+  }
+
+
+  async function login() {
+
+    const email =
+      document.getElementById("loginEmail").value.trim();
+
+    const password =
+      document.getElementById("loginPassword").value;
+
+    const msg =
+      document.getElementById("loginMessage");
+
+
+    if (!email || !password) {
+      showMessage(msg, "Въведи имейл и парола.");
+      return;
+    }
+
+
+    const {
+      error
+    } = await supabaseClient.auth.signInWithPassword({
+      email: email,
+      password: password
+    });
+
+
+    if (error) {
+      showMessage(msg, "Грешка при вход: " + error.message);
+      return;
+    }
+
+
+    showHome();
+  }
+
+
+  async function showHome() {
+
+    document
+      .getElementById("authSection")
+      .classList.add("hidden");
+
+    document
+      .getElementById("homeSection")
+      .classList.remove("hidden");
+
+    document
+      .getElementById("bottomMenu")
+      .classList.remove("hidden");
+
+    await loadProfile();
+  }
+
 
   async function loadProfile() {
 
@@ -200,65 +592,104 @@
       data: { user }
     } = await supabaseClient.auth.getUser();
 
+
     if (!user) {
-      document.getElementById("welcomeText").innerText =
-        "Моля, влез в профила си.";
       return;
     }
 
-    const { data, error } = await supabaseClient
+
+    const {
+      data,
+      error
+    } = await supabaseClient
       .from("profiles")
-      .select("name")
+      .select("*")
       .eq("id", user.id)
       .maybeSingle();
 
-    if (data && data.name) {
+
+    if (error) {
       document.getElementById("welcomeText").innerText =
-        "Здравей, " + data.name + "! Радваме се, че си тук. ❤️";
+        "Профилът е зареден.";
+      return;
+    }
+
+
+    if (data && data.name) {
+
+      document.getElementById("welcomeText").innerText =
+        "Здравей, " + data.name +
+        "! Радваме се, че си тук. ❤️";
+
     } else {
+
       document.getElementById("welcomeText").innerText =
         "Добре дошъл в Запознай.me! ❤️";
     }
   }
 
-  function openProfile() {
-    alert("👤 Раздел „Моят профил“ ще добавим следващ.");
+
+  async function checkUser() {
+
+    const {
+      data: { user }
+    } = await supabaseClient.auth.getUser();
+
+    if (user) {
+      showHome();
+    }
   }
+
+
+  function openProfile() {
+    alert("👤 Тук ще добавим подробния ти профил.");
+  }
+
 
   function searchPeople() {
-    alert("🔎 Раздел „Търси хора“ ще добавим следващ.");
+    alert("🔎 Тук ще добавим търсене и разглеждане на профили.");
   }
+
 
   function showLikes() {
-    alert("❤️ Раздел „Харесвания“ ще добавим следващ.");
+    alert("❤️ Тук ще добавим харесванията.");
   }
+
 
   function showFriends() {
-    alert("👥 Раздел „Приятели“ ще добавим следващ.");
+    alert("👥 Тук ще добавим приятелите.");
   }
+
 
   function openChat() {
-    alert("💬 Раздел „Чат“ ще добавим следващ.");
+    alert("💬 Тук ще добавим чата.");
   }
+
 
   function showNotifications() {
-    alert("🔔 Раздел „Известия“ ще добавим следващ.");
+    alert("🔔 Тук ще добавим известията.");
   }
 
+
   function goHome() {
-    window.scrollTo(0, 0);
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
   }
+
 
   async function logout() {
 
     await supabaseClient.auth.signOut();
 
-    alert("Излезе от профила.");
-
     location.reload();
   }
 
-  loadProfile();
 
-</script></body>
+  checkUser();
+
+</script>
+
+</body>
 </html>
