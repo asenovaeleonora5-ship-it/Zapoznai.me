@@ -8,7 +8,9 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
@@ -30,9 +32,31 @@
     }
 
     .container {
-      max-width: 600px;
+      max-width: 650px;
       margin: auto;
       padding: 15px;
+    }
+
+    .menu {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 7px;
+      margin-bottom: 15px;
+    }
+
+    .menu button {
+      background: white;
+      color: #ff4f81;
+      border: 2px solid #ff4f81;
+      padding: 10px 5px;
+      border-radius: 12px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .menu button.active {
+      background: #ff4f81;
+      color: white;
     }
 
     .profile-card {
@@ -66,12 +90,15 @@
     }
 
     button {
-      flex: 1;
       border: none;
       padding: 12px 8px;
       border-radius: 12px;
       font-size: 14px;
       cursor: pointer;
+    }
+
+    .buttons button {
+      flex: 1;
       color: white;
     }
 
@@ -91,16 +118,15 @@
       opacity: .85;
     }
 
+    button:disabled {
+      opacity: .6;
+      cursor: default;
+    }
+
     #status {
       text-align: center;
       margin: 15px 0;
       font-weight: bold;
-    }
-
-    .logout {
-      background: #333;
-      margin-top: 15px;
-      width: 100%;
     }
 
     .empty {
@@ -108,6 +134,96 @@
       padding: 25px;
       border-radius: 15px;
       text-align: center;
+      margin-bottom: 15px;
+    }
+
+    .logout {
+      background: #333;
+      color: white;
+      margin-top: 15px;
+      width: 100%;
+    }
+
+    .friend-row {
+      background: white;
+      border-radius: 15px;
+      padding: 15px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .friend-row button {
+      background: #35b86b;
+      color: white;
+    }
+
+    .chat-box {
+      background: white;
+      border-radius: 18px;
+      padding: 15px;
+    }
+
+    .chat-header {
+      font-size: 20px;
+      font-weight: bold;
+      color: #ff4f81;
+      margin-bottom: 12px;
+    }
+
+    .messages {
+      height: 350px;
+      overflow-y: auto;
+      padding: 10px;
+      background: #f5f5f5;
+      border-radius: 12px;
+      margin-bottom: 10px;
+    }
+
+    .message {
+      padding: 9px 12px;
+      border-radius: 15px;
+      margin-bottom: 8px;
+      max-width: 80%;
+      word-wrap: break-word;
+    }
+
+    .mine {
+      background: #ff4f81;
+      color: white;
+      margin-left: auto;
+    }
+
+    .theirs {
+      background: white;
+      color: #222;
+    }
+
+    .send-box {
+      display: flex;
+      gap: 7px;
+    }
+
+    .send-box input {
+      flex: 1;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 15px;
+    }
+
+    .send-box button {
+      background: #35b86b;
+      color: white;
+    }
+
+    .back {
+      width: 100%;
+      background: #777;
+      color: white;
+      margin-bottom: 10px;
     }
   </style>
 </head>
@@ -123,206 +239,862 @@
 
   <div id="status">Зареждане...</div>
 
-  <div id="profiles"></div>
+  <div class="menu">
+    <button id="homeBtn" class="active" onclick="showHome()">🏠 Начало</button>
+    <button onclick="showLikes()">❤️ Харесвания</button>
+    <button onclick="showFriends()">👥 Приятели</button>
+  </div>
 
-  <button class="logout" onclick="logout()">Изход</button>
+  <div id="content"></div>
+
+  <button class="logout" onclick="logout()">🚪 Изход</button>
 
 </div>
 
 <script>
-  const SUPABASE_URL = "https://shlwyiawfyyzyapcfmcu.supabase.co";
 
-  const SUPABASE_KEY =
-    "sb_publishable__XLJp2i5KQoRg03MeEs_VQ_9-mg5gLD";
+const SUPABASE_URL =
+  "https://shlwyiawfyyzyapcfmcu.supabase.co";
 
-  const supabaseClient =
-    window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_KEY =
+  "sb_publishable__XLJp2i5KQoRg03MeEs_VQ_9-mg5gLD";
 
-  let currentUser = null;
+const supabaseClient =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
 
-  async function start() {
-    const { data, error } =
-      await supabaseClient.auth.getUser();
+let currentUser = null;
+let currentChatUser = null;
+let currentChatName = "";
 
-    if (error || !data.user) {
-      document.getElementById("status").innerHTML =
-        "Моля, влезте в профила си.";
+
+// =========================
+// START
+// =========================
+
+async function start() {
+
+  const { data, error } =
+    await supabaseClient.auth.getUser();
+
+  if (error || !data.user) {
+
+    document.getElementById("status").innerHTML =
+      "Моля, влезте в профила си.";
+
+    document.getElementById("content").innerHTML =
+      '<div class="empty">Няма активен вход.</div>';
+
+    return;
+  }
+
+  currentUser = data.user;
+
+  document.getElementById("status").innerHTML =
+    "Добре дошли! ❤️";
+
+  showHome();
+}
+
+
+// =========================
+// HOME
+// =========================
+
+async function showHome() {
+
+  setActiveButton("homeBtn");
+
+  const container =
+    document.getElementById("content");
+
+  container.innerHTML =
+    '<div class="empty">Зареждане на профили...</div>';
+
+  const { data, error } =
+    await supabaseClient
+      .from("profiles")
+      .select("*")
+      .neq("id", currentUser.id);
+
+  if (error) {
+
+    console.log(error);
+
+    container.innerHTML =
+      '<div class="empty">Грешка при зареждане на профилите.</div>';
+
+    return;
+  }
+
+  container.innerHTML = "";
+
+  if (!data || data.length === 0) {
+
+    container.innerHTML =
+      '<div class="empty">Все още няма други профили. ❤️</div>';
+
+    return;
+  }
+
+  for (const profile of data) {
+
+    const card =
+      document.createElement("div");
+
+    card.className = "profile-card";
+
+    card.innerHTML = `
+      <h2>${escapeHtml(profile.name || "Потребител")}</h2>
+
+      <div class="info">
+        🎂 Възраст:
+        ${escapeHtml(profile.age || "—")}
+      </div>
+
+      <div class="info">
+        📍 Град:
+        ${escapeHtml(profile.city || "—")}
+      </div>
+
+      <div class="info">
+        👤 Пол:
+        ${escapeHtml(profile.gender || "—")}
+      </div>
+
+      <div class="info">
+        🔎 Търси:
+        ${escapeHtml(profile.looking_for || "—")}
+      </div>
+
+      <div class="description">
+        ${escapeHtml(
+          profile.description ||
+          "Няма описание."
+        )}
+      </div>
+
+      <div class="buttons">
+
+        <button
+          class="like"
+          onclick="likeUser('${profile.id}', this)">
+          ❤️ Харесвам
+        </button>
+
+        <button
+          class="friend"
+          onclick="addFriend('${profile.id}', this)">
+          👥 Приятел
+        </button>
+
+        <button
+          class="chat"
+          onclick="openChat(
+            '${profile.id}',
+            '${escapeHtml(profile.name || "Потребител")}'
+          )">
+          💬 Чат
+        </button>
+
+      </div>
+    `;
+
+    container.appendChild(card);
+  }
+}
+
+
+// =========================
+// LIKE
+// =========================
+
+async function likeUser(userId, button) {
+
+  if (!currentUser) return;
+
+  const { error } =
+    await supabaseClient
+      .from("likes")
+      .insert({
+        user_id: currentUser.id,
+        liked_user_id: userId
+      });
+
+  if (error) {
+
+    if (error.code === "23505") {
+
+      button.innerText =
+        "❤️ Харесано";
+
+      button.disabled = true;
+
       return;
     }
 
-    currentUser = data.user;
+    console.log(error);
 
-    document.getElementById("status").innerHTML =
-      "Добре дошли! ❤️";
+    alert("Грешка при харесването.");
 
-    loadProfiles();
+    return;
   }
 
-  async function loadProfiles() {
+  button.innerText =
+    "❤️ Харесано";
 
-    const { data, error } =
+  button.disabled = true;
+}
+
+
+// =========================
+// FRIEND REQUEST
+// =========================
+
+async function addFriend(userId, button) {
+
+  if (!currentUser) return;
+
+  const { data: existing } =
+    await supabaseClient
+      .from("friends")
+      .select("*")
+      .or(
+        `and(user_id.eq.${currentUser.id},friend_id.eq.${userId}),and(user_id.eq.${userId},friend_id.eq.${currentUser.id})`
+      )
+      .maybeSingle();
+
+  if (existing) {
+
+    if (existing.status === "accepted") {
+      button.innerText = "✓ Приятели";
+    } else if (
+      existing.user_id === currentUser.id
+    ) {
+      button.innerText = "✓ Изпратено";
+    } else {
+      button.innerText = "✓ Има заявка";
+    }
+
+    button.disabled = true;
+
+    return;
+  }
+
+  const { error } =
+    await supabaseClient
+      .from("friends")
+      .insert({
+        user_id: currentUser.id,
+        friend_id: userId,
+        status: "pending"
+      });
+
+  if (error) {
+
+    console.log(error);
+
+    alert("Грешка при изпращането на заявката.");
+
+    return;
+  }
+
+  button.innerText =
+    "✓ Изпратено";
+
+  button.disabled = true;
+}
+
+
+// =========================
+// LIKES
+// =========================
+
+async function showLikes() {
+
+  const container =
+    document.getElementById("content");
+
+  container.innerHTML =
+    '<div class="empty">Зареждане...</div>';
+
+  const { data, error } =
+    await supabaseClient
+      .from("likes")
+      .select("liked_user_id")
+      .eq("user_id", currentUser.id);
+
+  if (error) {
+
+    console.log(error);
+
+    container.innerHTML =
+      '<div class="empty">Грешка при зареждане.</div>';
+
+    return;
+  }
+
+  if (!data || data.length === 0) {
+
+    container.innerHTML =
+      '<div class="empty">Все още не сте харесали никого. ❤️</div>';
+
+    return;
+  }
+
+  container.innerHTML =
+    '<h2 style="color:#ff4f81">❤️ Моите харесвания</h2>';
+
+  for (const like of data) {
+
+    const { data: profile } =
       await supabaseClient
         .from("profiles")
         .select("*")
-        .neq("id", currentUser.id);
+        .eq("id", like.liked_user_id)
+        .maybeSingle();
 
-    if (error) {
-      console.log(error);
+    if (!profile) continue;
 
-      document.getElementById("profiles").innerHTML =
-        '<div class="empty">Грешка при зареждане на профилите.</div>';
+    const row =
+      document.createElement("div");
 
-      return;
-    }
+    row.className = "friend-row";
 
-    const container =
-      document.getElementById("profiles");
+    row.innerHTML = `
+      <div>
+        <strong>
+          ${escapeHtml(profile.name || "Потребител")}
+        </strong>
+        <br>
+        ${escapeHtml(profile.city || "")}
+      </div>
 
-    container.innerHTML = "";
+      <button
+        onclick="openChat(
+          '${profile.id}',
+          '${escapeHtml(profile.name || "Потребител")}'
+        )">
+        💬 Чат
+      </button>
+    `;
 
-    if (!data || data.length === 0) {
-      container.innerHTML =
-        '<div class="empty">Все още няма други профили. ❤️</div>';
+    container.appendChild(row);
+  }
+}
 
-      return;
-    }
 
-    data.forEach(profile => {
+// =========================
+// FRIENDS
+// =========================
 
-      const card =
+async function showFriends() {
+
+  const container =
+    document.getElementById("content");
+
+  container.innerHTML =
+    '<div class="empty">Зареждане...</div>';
+
+  const { data, error } =
+    await supabaseClient
+      .from("friends")
+      .select("*")
+      .or(
+        `user_id.eq.${currentUser.id},friend_id.eq.${currentUser.id}`
+      );
+
+  if (error) {
+
+    console.log(error);
+
+    container.innerHTML =
+      '<div class="empty">Грешка при зареждане на приятелите.</div>';
+
+    return;
+  }
+
+  container.innerHTML =
+    '<h2 style="color:#ff4f81">👥 Приятели</h2>';
+
+  const requests =
+    data.filter(
+      x =>
+        x.status === "pending" &&
+        x.friend_id === currentUser.id
+    );
+
+  const accepted =
+    data.filter(
+      x =>
+        x.status === "accepted"
+    );
+
+  if (requests.length > 0) {
+
+    const title =
+      document.createElement("h3");
+
+    title.innerText =
+      "📩 Получени заявки";
+
+    container.appendChild(title);
+
+    for (const request of requests) {
+
+      const { data: profile } =
+        await supabaseClient
+          .from("profiles")
+          .select("*")
+          .eq("id", request.user_id)
+          .maybeSingle();
+
+      if (!profile) continue;
+
+      const row =
         document.createElement("div");
 
-      card.className = "profile-card";
+      row.className = "friend-row";
 
-      card.innerHTML = `
-        <h2>${escapeHtml(profile.name || "Потребител")}</h2>
-
-        <div class="info">
-          🎂 Възраст:
-          ${escapeHtml(profile.age || "—")}
+      row.innerHTML = `
+        <div>
+          <strong>
+            ${escapeHtml(profile.name || "Потребител")}
+          </strong>
         </div>
 
-        <div class="info">
-          📍 Град:
-          ${escapeHtml(profile.city || "—")}
-        </div>
-
-        <div class="info">
-          👤 Пол:
-          ${escapeHtml(profile.gender || "—")}
-        </div>
-
-        <div class="info">
-          🔎 Търси:
-          ${escapeHtml(profile.looking_for || "—")}
-        </div>
-
-        <div class="description">
-          ${escapeHtml(profile.description || "Няма описание.")}
-        </div>
-
-        <div class="buttons">
-
+        <div>
           <button
-            class="like"
-            onclick="likeUser('${profile.id}', this)">
-            ❤️ Харесвам
+            onclick="acceptFriend(
+              ${request.id},
+              this
+            )">
+            ✓ Приеми
           </button>
-
-          <button
-            class="friend"
-            onclick="addFriend('${profile.id}', this)">
-            👥 Приятел
-          </button>
-
-          <button
-            class="chat"
-            onclick="openChat('${profile.id}')">
-            💬 Чат
-          </button>
-
         </div>
       `;
 
-      container.appendChild(card);
-    });
-  }
-
-  async function likeUser(userId, button) {
-
-    if (!currentUser) return;
-
-    const { error } =
-      await supabaseClient
-        .from("likes")
-        .insert({
-          user_id: currentUser.id,
-          liked_user_id: userId
-        });
-
-    if (error) {
-
-      if (error.code === "23505") {
-        button.innerText = "❤️ Харесано";
-        return;
-      }
-
-      alert("Грешка при харесването.");
-      console.log(error);
-      return;
+      container.appendChild(row);
     }
-
-    button.innerText = "❤️ Харесано";
-    button.disabled = true;
   }
 
-  async function addFriend(userId, button) {
+  if (accepted.length > 0) {
 
-    if (!currentUser) return;
+    const title =
+      document.createElement("h3");
 
-    /*
-      Ако все още нямаш таблица friends,
-      временно показваме съобщение.
-      След това ще направим истинската система
-      за приятелски заявки.
-    */
+    title.innerText =
+      "❤️ Моите приятели";
 
-    alert("Изпратена е заявка за приятелство! 👥");
+    container.appendChild(title);
 
-    button.innerText = "✓ Изпратено";
-    button.disabled = true;
+    for (const friendship of accepted) {
+
+      const friendId =
+        friendship.user_id === currentUser.id
+          ? friendship.friend_id
+          : friendship.user_id;
+
+      const { data: profile } =
+        await supabaseClient
+          .from("profiles")
+          .select("*")
+          .eq("id", friendId)
+          .maybeSingle();
+
+      if (!profile) continue;
+
+      const row =
+        document.createElement("div");
+
+      row.className = "friend-row";
+
+      row.innerHTML = `
+        <div>
+          <strong>
+            ${escapeHtml(profile.name || "Потребител")}
+          </strong>
+          <br>
+          ${escapeHtml(profile.city || "")}
+        </div>
+
+        <button
+          onclick="openChat(
+            '${profile.id}',
+            '${escapeHtml(profile.name || "Потребител")}'
+          )">
+          💬 Чат
+        </button>
+      `;
+
+      container.appendChild(row);
+    }
   }
 
-  function openChat(userId) {
+  if (
+    requests.length === 0 &&
+    accepted.length === 0
+  ) {
+
+    container.innerHTML +=
+      '<div class="empty">Все още нямате приятели или заявки. 👥</div>';
+  }
+}
+
+
+// =========================
+// ACCEPT FRIEND
+// =========================
+
+async function acceptFriend(id, button) {
+
+  const { error } =
+    await supabaseClient
+      .from("friends")
+      .update({
+        status: "accepted"
+      })
+      .eq("id", id)
+      .eq("friend_id", currentUser.id);
+
+  if (error) {
+
+    console.log(error);
+
+    alert("Грешка при приемането.");
+
+    return;
+  }
+
+  button.innerText =
+    "✓ Прието";
+
+  button.disabled = true;
+
+  setTimeout(
+    showFriends,
+    500
+  );
+}
+
+
+// =========================
+// CHAT
+// =========================
+
+async function openChat(userId, name) {
+
+  currentChatUser = userId;
+  currentChatName = name;
+
+  const container =
+    document.getElementById("content");
+
+  container.innerHTML = `
+
+    <div class="chat-box">
+
+      <button
+        class="back"
+        onclick="showHome()">
+        ← Назад
+      </button>
+
+      <div class="chat-header">
+        💬 Чат с ${escapeHtml(name)}
+      </div>
+
+      <div
+        id="messages"
+        class="messages">
+        Зареждане...
+      </div>
+
+      <div class="send-box">
+
+        <input
+          id="messageInput"
+          type="text"
+          placeholder="Напишете съобщение..."
+          onkeydown="
+            if(event.key === 'Enter')
+            sendMessage();
+          "
+        >
+
+        <button
+          onclick="sendMessage()">
+          ➤
+        </button>
+
+      </div>
+
+    </div>
+  `;
+
+  await loadMessages();
+
+  subscribeToMessages();
+}
+
+
+// =========================
+// LOAD MESSAGES
+// =========================
+
+async function loadMessages() {
+
+  const messagesBox =
+    document.getElementById("messages");
+
+  if (!messagesBox) return;
+
+  const { data, error } =
+    await supabaseClient
+      .from("messages")
+      .select("*")
+      .or(
+        `and(sender_id.eq.${currentUser.id},receiver_id.eq.${currentChatUser}),and(sender_id.eq.${currentChatUser},receiver_id.eq.${currentUser.id})`
+      )
+      .order(
+        "created_at",
+        { ascending: true }
+      );
+
+  if (error) {
+
+    console.log(error);
+
+    messagesBox.innerHTML =
+      "Грешка при зареждане на съобщенията.";
+
+    return;
+  }
+
+  messagesBox.innerHTML = "";
+
+  if (!data || data.length === 0) {
+
+    messagesBox.innerHTML =
+      '<div style="text-align:center;color:#888;">Все още няма съобщения.</div>';
+
+    return;
+  }
+
+  data.forEach(addMessageToScreen);
+
+  scrollMessages();
+}
+
+
+// =========================
+// SEND MESSAGE
+// =========================
+
+async function sendMessage() {
+
+  const input =
+    document.getElementById("messageInput");
+
+  if (!input) return;
+
+  const message =
+    input.value.trim();
+
+  if (!message) return;
+
+  const { error } =
+    await supabaseClient
+      .from("messages")
+      .insert({
+        sender_id: currentUser.id,
+        receiver_id: currentChatUser,
+        message: message
+      });
+
+  if (error) {
+
+    console.log(error);
 
     alert(
-      "Чатът с този потребител ще бъде отворен тук. 💬"
+      "Съобщението не може да бъде изпратено."
     );
 
-    /*
-      Следващата стъпка ще бъде истинският чат
-      със съобщения в таблицата messages.
-    */
+    return;
   }
 
-  async function logout() {
+  input.value = "";
 
-    await supabaseClient.auth.signOut();
+  await loadMessages();
+}
 
-    window.location.reload();
+
+// =========================
+// REALTIME CHAT
+// =========================
+
+let chatChannel = null;
+
+function subscribeToMessages() {
+
+  if (chatChannel) {
+
+    supabaseClient
+      .removeChannel(chatChannel);
   }
 
-  function escapeHtml(value) {
+  chatChannel =
+    supabaseClient
+      .channel(
+        "chat-" +
+        currentUser.id +
+        "-" +
+        currentChatUser
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages"
+        },
+        payload => {
 
-    return String(value)
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;")
-      .replaceAll("'", "&#039;");
+          const message =
+            payload.new;
+
+          if (
+            (
+              message.sender_id === currentUser.id &&
+              message.receiver_id === currentChatUser
+            ) ||
+            (
+              message.sender_id === currentChatUser &&
+              message.receiver_id === currentUser.id
+            )
+          ) {
+
+            addMessageToScreen(message);
+
+            scrollMessages();
+          }
+        }
+      )
+      .subscribe();
+}
+
+
+// =========================
+// MESSAGE DISPLAY
+// =========================
+
+function addMessageToScreen(message) {
+
+  const box =
+    document.getElementById("messages");
+
+  if (!box) return;
+
+  const empty =
+    box.querySelector(
+      'div[style*="text-align:center"]'
+    );
+
+  if (empty) {
+    empty.remove();
   }
 
-  start();
+  const div =
+    document.createElement("div");
+
+  div.className =
+    "message " +
+    (
+      message.sender_id === currentUser.id
+        ? "mine"
+        : "theirs"
+    );
+
+  div.innerText =
+    message.message;
+
+  box.appendChild(div);
+}
+
+
+// =========================
+// SCROLL CHAT
+// =========================
+
+function scrollMessages() {
+
+  const box =
+    document.getElementById("messages");
+
+  if (box) {
+    box.scrollTop =
+      box.scrollHeight;
+  }
+}
+
+
+// =========================
+// ACTIVE MENU
+// =========================
+
+function setActiveButton(id) {
+
+  document
+    .querySelectorAll(".menu button")
+    .forEach(btn =>
+      btn.classList.remove("active")
+    );
+
+  const button =
+    document.getElementById(id);
+
+  if (button) {
+    button.classList.add("active");
+  }
+}
+
+
+// =========================
+// LOGOUT
+// =========================
+
+async function logout() {
+
+  await supabaseClient.auth.signOut();
+
+  window.location.reload();
+}
+
+
+// =========================
+// SECURITY
+// =========================
+
+function escapeHtml(value) {
+
+  return String(value)
+
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+
+// =========================
+// START
+// =========================
+
+start();
+
 </script>
 
 </body>
