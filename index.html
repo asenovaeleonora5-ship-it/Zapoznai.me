@@ -1,1 +1,92 @@
+<!DOCTYPE html><html lang="bg">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Запознай.me</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #ff8fab, #ffc2d1);
+      color: #333;
+      min-height: 100vh;
+    }header {
+  text-align: center;
+  padding: 35px 15px;
+  color: white;
+}
 
+header h1 {
+  font-size: 42px;
+  margin: 0;
+}
+
+header p {
+  font-size: 18px;
+}
+
+.box {
+  max-width: 500px;
+  margin: 20px auto;
+  background: white;
+  padding: 25px;
+  border-radius: 20px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+input, button {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px;
+  margin-top: 12px;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  font-size: 16px;
+}
+
+button {
+  background: #ff4f81;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button:hover {
+  background: #e83e70;
+}
+
+#message {
+  text-align: center;
+  margin-top: 15px;
+  color: #ff4f81;
+  font-weight: bold;
+}
+
+  </style>
+</head><body><header>
+  <h1>💕 Запознай.me</h1>
+  <p>Намери нови хора и създай истински запознанства.</p>
+</header><div class="box">
+  <h2>Създай профил</h2>  <input type="text" id="name" placeholder="Твоето име">
+  <input type="number" id="age" placeholder="Възраст">
+  <input type="text" id="city" placeholder="Град"><button onclick="createProfile()">Създай профил</button>
+
+  <div id="message"></div>
+</div><script>
+  function createProfile() {
+    const name = document.getElementById("name").value;
+    const age = document.getElementById("age").value;
+    const city = document.getElementById("city").value;
+
+    if (!name || !age || !city) {
+      document.getElementById("message").textContent =
+        "Моля, попълни всички полета.";
+      return;
+    }
+
+    document.getElementById("message").textContent =
+      "Добре дошла, " + name + "! Профилът ти е създаден. 💕";
+  }
+</script></body>
+</html>
