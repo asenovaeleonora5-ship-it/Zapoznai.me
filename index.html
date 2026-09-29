@@ -1,13 +1,8 @@
-<!DOCTYPE html>
-<html lang="bg">
+<!DOCTYPE html><html lang="bg">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Запознай.me</title>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <style>
+  <title>Запознай.me</title>  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>  <style>
     * {
       box-sizing: border-box;
     }
@@ -15,436 +10,255 @@
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #ff5f9e, #8e44ad);
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
+      background: #f7f0f5;
+      color: #333;
     }
 
-    .box {
-      width: 100%;
-      max-width: 430px;
-      background: white;
-      padding: 25px;
-      border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.2);
-    }
-
-    h1 {
-      text-align: center;
-      color: #e83e8c;
-      margin-top: 0;
-    }
-
-    h2 {
-      text-align: center;
-      color: #555;
-    }
-
-    input, select, textarea, button {
-      width: 100%;
-      padding: 13px;
-      margin-top: 10px;
-      border-radius: 10px;
-      border: 1px solid #ddd;
-      font-size: 16px;
-    }
-
-    textarea {
-      min-height: 90px;
-      resize: vertical;
-    }
-
-    button {
-      background: #e83e8c;
+    header {
+      background: linear-gradient(135deg, #ff4f9a, #8e44ad);
       color: white;
-      border: none;
-      font-weight: bold;
+      padding: 18px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,.15);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    header p {
+      margin: 5px 0 0;
+      opacity: .9;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 20px auto;
+      padding: 0 15px 90px;
+    }
+
+    .welcome {
+      background: white;
+      border-radius: 18px;
+      padding: 22px;
+      margin-bottom: 18px;
+      box-shadow: 0 3px 12px rgba(0,0,0,.08);
+      text-align: center;
+    }
+
+    .welcome h2 {
+      margin-top: 0;
+      color: #8e44ad;
+    }
+
+    .menu {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 18px;
+      padding: 25px 15px;
+      text-align: center;
+      box-shadow: 0 3px 12px rgba(0,0,0,.08);
       cursor: pointer;
+      transition: .2s;
     }
 
-    button:hover {
-      background: #d63384;
+    .card:hover {
+      transform: translateY(-3px);
     }
 
-    .hidden {
-      display: none;
+    .icon {
+      font-size: 38px;
+      margin-bottom: 8px;
     }
 
-    .message {
-      text-align: center;
-      margin-top: 15px;
-      font-weight: bold;
+    .card h3 {
+      margin: 5px 0;
+      color: #8e44ad;
     }
 
-    .success {
-      color: green;
-    }
-
-    .error {
-      color: red;
-    }
-
-    .profile {
-      text-align: center;
-    }
-
-    .profile-card {
-      background: #fff0f6;
-      padding: 20px;
-      border-radius: 15px;
-      margin-top: 20px;
+    .card p {
+      margin: 0;
+      color: #777;
+      font-size: 14px;
     }
 
     .logout {
-      background: #555;
-      margin-top: 15px;
+      margin-top: 20px;
+      width: 100%;
+      padding: 14px;
+      border: 0;
+      border-radius: 12px;
+      background: #444;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
     }
-  </style>
-</head>
 
-<body>
+    .bottom {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 5px;
+      box-shadow: 0 -2px 10px rgba(0,0,0,.12);
+    }
 
-<div class="box">
+    .bottom button {
+      border: 0;
+      background: none;
+      font-size: 13px;
+      color: #555;
+      cursor: pointer;
+    }
 
-  <h1>💕 Запознай.me</h1>
+    .bottom span {
+      display: block;
+      font-size: 24px;
+    }
 
-  <!-- РЕГИСТРАЦИЯ -->
-  <div id="registerBox">
-
-    <h2>Създай профил</h2>
-
-    <input id="name" type="text" placeholder="Име">
-
-    <input id="age" type="number" placeholder="Възраст" min="18">
-
-    <input id="city" type="text" placeholder="Град">
-
-    <select id="gender">
-      <option value="">Пол</option>
-      <option value="Жена">Жена</option>
-      <option value="Мъж">Мъж</option>
-      <option value="Друго">Друго</option>
-    </select>
-
-    <select id="looking_for">
-      <option value="">Кого търсиш?</option>
-      <option value="Мъж">Мъж</option>
-      <option value="Жена">Жена</option>
-      <option value="Всички">Всички</option>
-    </select>
-
-    <textarea id="description"
-      placeholder="Разкажи малко за себе си..."></textarea>
-
-    <input id="email" type="email" placeholder="Имейл">
-
-    <input id="password" type="password" placeholder="Парола">
-
-    <input id="confirmPassword" type="password"
-      placeholder="Повтори паролата">
-
-    <button onclick="register()">Регистрация</button>
-
-    <div id="message" class="message"></div>
-
-  </div>
-
-
-  <!-- ПРОФИЛ -->
-  <div id="profileBox" class="hidden profile">
-
-    <h2>💕 Твоят профил</h2>
-
-    <div class="profile-card">
-
-      <h2 id="profileName"></h2>
-
-      <p id="profileInfo"></p>
-
-      <p id="profileDescription"></p>
-
-    </div>
-
-    <button class="logout" onclick="logout()">Изход</button>
-
-  </div>
-
+    @media (max-width: 450px) {
+      .menu {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style></head><body><header>
+  <h1>💗 Запознай.me</h1>
+  <p>Нови хора. Нови приятелства. Нова любов.</p>
+</header><div class="container">  <div class="welcome">
+    <h2>Добре дошъл! ❤️</h2>
+    <p id="welcomeText">Зареждаме твоя профил...</p>
+  </div>  <div class="menu"><div class="card" onclick="openProfile()">
+  <div class="icon">👤</div>
+  <h3>Моят профил</h3>
+  <p>Виж и редактирай профила си</p>
 </div>
 
-
-<script>
-
-  // SUPABASE
-  const SUPABASE_URL =
-    "https://shlwyiawfyyzyapcfmcu.supabase.co";
-
-  const SUPABASE_KEY =
-    "sb_publishable__XLJp2i5KQoRg03MeEs_VQ_9-mg5gLD";
-
-  const supabaseClient =
-    supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_KEY
-    );
-
-
-  // РЕГИСТРАЦИЯ
-  async function register() {
-
-    const name =
-      document.getElementById("name").value.trim();
-
-    const age =
-      document.getElementById("age").value;
-
-    const city =
-      document.getElementById("city").value.trim();
-
-    const gender =
-      document.getElementById("gender").value;
-
-    const looking_for =
-      document.getElementById("looking_for").value;
-
-    const description =
-      document.getElementById("description").value.trim();
-
-    const email =
-      document.getElementById("email").value.trim();
-
-    const password =
-      document.getElementById("password").value;
-
-    const confirmPassword =
-      document.getElementById("confirmPassword").value;
-
-    const message =
-      document.getElementById("message");
-
-
-    // ПРОВЕРКИ
-
-    if (
-      !name ||
-      !age ||
-      !city ||
-      !gender ||
-      !looking_for ||
-      !email ||
-      !password
-    ) {
-      message.className = "message error";
-      message.innerText =
-        "Моля, попълни всички задължителни полета.";
-      return;
-    }
-
-
-    if (Number(age) < 18) {
-      message.className = "message error";
-      message.innerText =
-        "Регистрацията е само за лица над 18 години.";
-      return;
-    }
-
-
-    if (password !== confirmPassword) {
-      message.className = "message error";
-      message.innerText =
-        "Паролите не съвпадат.";
-      return;
-    }
-
-
-    if (password.length < 6) {
-      message.className = "message error";
-      message.innerText =
-        "Паролата трябва да е поне 6 символа.";
-      return;
-    }
-
-
-    message.className = "message";
-    message.innerText =
-      "Създаваме профила...";
-
-
-    // СЪЗДАВАНЕ НА USER
-    const {
-      data: authData,
-      error: authError
-    } = await supabaseClient.auth.signUp({
-      email: email,
-      password: password
-    });
-
-
-    if (authError) {
-
-      message.className = "message error";
-
-      message.innerText =
-        authError.message;
-
-      return;
-    }
-
-
-    if (!authData.user) {
-
-      message.className = "message error";
-
-      message.innerText =
-        "Потребителят не беше създаден.";
-
-      return;
-    }
-
-
-    // ЗАПИСВАНЕ В PROFILES
-    const {
-      error: profileError
-    } = await supabaseClient
-      .from("profiles")
-      .insert({
-
-        id: authData.user.id,
-
-        name: name,
-
-        age: Number(age),
-
-        city: city,
-
-        gender: gender,
-
-        looking_for: looking_for,
-
-        description: description,
-
-        email: email
-
-      });
-
-
-    if (profileError) {
-
-      console.error(profileError);
-
-      message.className =
-        "message error";
-
-      message.innerText =
-        "Потребителят е създаден, но профилът не беше записан: "
-        + profileError.message;
-
-      return;
-    }
-
-
-    // УСПЕШНО
-    message.className =
-      "message success";
-
-    message.innerText =
-      "Профилът е създаден успешно! ❤️";
-
-
-    setTimeout(() => {
-      showProfile({
-        name,
-        age,
-        city,
-        gender,
-        looking_for,
-        description
-      });
-    }, 1000);
-
-  }
-
-
-  // ПОКАЗВАНЕ НА ПРОФИЛА
-  function showProfile(profile) {
-
-    document
-      .getElementById("registerBox")
-      .classList.add("hidden");
-
-    document
-      .getElementById("profileBox")
-      .classList.remove("hidden");
-
-
-    document.getElementById("profileName")
-      .innerText =
-      profile.name;
-
-
-    document.getElementById("profileInfo")
-      .innerText =
-      profile.age +
-      " г. • " +
-      profile.city +
-      " • " +
-      profile.gender;
-
-
-    document.getElementById("profileDescription")
-      .innerText =
-      profile.description ||
-      "Все още няма описание.";
-  }
-
-
-  // ПРОВЕРКА ПРИ ОТВАРЯНЕ
-  async function checkUser() {
+<div class="card" onclick="searchPeople()">
+  <div class="icon">🔎</div>
+  <h3>Търси хора</h3>
+  <p>Открий нови хора</p>
+</div>
+
+<div class="card" onclick="showLikes()">
+  <div class="icon">❤️</div>
+  <h3>Харесвания</h3>
+  <p>Кой те е харесал</p>
+</div>
+
+<div class="card" onclick="showFriends()">
+  <div class="icon">👥</div>
+  <h3>Приятели</h3>
+  <p>Твоите приятели</p>
+</div>
+
+<div class="card" onclick="openChat()">
+  <div class="icon">💬</div>
+  <h3>Чат</h3>
+  <p>Пиши на приятели</p>
+</div>
+
+<div class="card" onclick="showNotifications()">
+  <div class="icon">🔔</div>
+  <h3>Известия</h3>
+  <p>Нови известия</p>
+</div>
+
+  </div><button class="logout" onclick="logout()">🚪 Изход</button>
+
+</div><div class="bottom">
+  <button onclick="goHome()">
+    <span>🏠</span>Начало
+  </button>  <button onclick="searchPeople()">
+    <span>🔎</span>Търси
+  </button>  <button onclick="openChat()">
+    <span>💬</span>Чат
+  </button>  <button onclick="openProfile()">
+    <span>👤</span>Профил
+  </button>
+</div><script>
+
+  const SUPABASE_URL = "https://shlwyiawfyyzyapcfmcu.supabase.co";
+  const SUPABASE_KEY = "sb_publishable__XLJp2i5KQoRg03MeEs_VQ_9-mg5gLD";
+
+  const supabaseClient = supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+
+  async function loadProfile() {
 
     const {
-      data
+      data: { user }
     } = await supabaseClient.auth.getUser();
 
-
-    if (!data.user) {
+    if (!user) {
+      document.getElementById("welcomeText").innerText =
+        "Моля, влез в профила си.";
       return;
     }
 
-
-    const {
-      data: profile,
-      error
-    } = await supabaseClient
+    const { data, error } = await supabaseClient
       .from("profiles")
-      .select("*")
-      .eq("id", data.user.id)
-      .single();
+      .select("name")
+      .eq("id", user.id)
+      .maybeSingle();
 
-
-    if (!error && profile) {
-
-      showProfile(profile);
-
+    if (data && data.name) {
+      document.getElementById("welcomeText").innerText =
+        "Здравей, " + data.name + "! Радваме се, че си тук. ❤️";
+    } else {
+      document.getElementById("welcomeText").innerText =
+        "Добре дошъл в Запознай.me! ❤️";
     }
-
   }
 
+  function openProfile() {
+    alert("👤 Раздел „Моят профил“ ще добавим следващ.");
+  }
 
-  // ИЗХОД
+  function searchPeople() {
+    alert("🔎 Раздел „Търси хора“ ще добавим следващ.");
+  }
+
+  function showLikes() {
+    alert("❤️ Раздел „Харесвания“ ще добавим следващ.");
+  }
+
+  function showFriends() {
+    alert("👥 Раздел „Приятели“ ще добавим следващ.");
+  }
+
+  function openChat() {
+    alert("💬 Раздел „Чат“ ще добавим следващ.");
+  }
+
+  function showNotifications() {
+    alert("🔔 Раздел „Известия“ ще добавим следващ.");
+  }
+
+  function goHome() {
+    window.scrollTo(0, 0);
+  }
+
   async function logout() {
 
     await supabaseClient.auth.signOut();
 
-    location.reload();
+    alert("Излезе от профила.");
 
+    location.reload();
   }
 
+  loadProfile();
 
-  checkUser();
-
-</script>
-
-</body>
+</script></body>
 </html>
