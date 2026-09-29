@@ -1,92 +1,393 @@
-<!DOCTYPE html><html lang="bg">
+<!DOCTYPE html>
+<html lang="bg">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Запознай.me</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       font-family: Arial, sans-serif;
       background: linear-gradient(135deg, #ff8fab, #ffc2d1);
-      color: #333;
       min-height: 100vh;
-    }header {
-  text-align: center;
-  padding: 35px 15px;
-  color: white;
-}
+      color: #333;
+    }
 
-header h1 {
-  font-size: 42px;
-  margin: 0;
-}
+    header {
+      text-align: center;
+      padding: 30px 15px 10px;
+      color: white;
+    }
 
-header p {
-  font-size: 18px;
-}
+    header h1 {
+      font-size: 42px;
+      margin: 0;
+    }
 
-.box {
-  max-width: 500px;
-  margin: 20px auto;
-  background: white;
-  padding: 25px;
-  border-radius: 20px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-}
+    header p {
+      font-size: 18px;
+    }
 
-input, button {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 14px;
-  margin-top: 12px;
-  border-radius: 12px;
-  border: 1px solid #ddd;
-  font-size: 16px;
-}
+    .box {
+      width: calc(100% - 30px);
+      max-width: 520px;
+      margin: 20px auto 40px;
+      background: white;
+      padding: 25px;
+      border-radius: 22px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
 
-button {
-  background: #ff4f81;
-  color: white;
-  border: none;
-  cursor: pointer;
-  font-weight: bold;
-}
+    h2 {
+      text-align: center;
+      color: #ff4f81;
+    }
 
-button:hover {
-  background: #e83e70;
-}
+    label {
+      display: block;
+      margin-top: 14px;
+      font-weight: bold;
+    }
 
-#message {
-  text-align: center;
-  margin-top: 15px;
-  color: #ff4f81;
-  font-weight: bold;
-}
+    input,
+    select,
+    textarea,
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 7px;
+      border-radius: 12px;
+      border: 1px solid #ddd;
+      font-size: 16px;
+      font-family: Arial, sans-serif;
+    }
 
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    button {
+      margin-top: 20px;
+      background: #ff4f81;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background: #e83e70;
+    }
+
+    .secondary {
+      background: #fff0f5;
+      color: #ff4f81;
+      margin-top: 10px;
+    }
+
+    #message {
+      text-align: center;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    .profile {
+      margin-top: 25px;
+      padding: 20px;
+      border-radius: 18px;
+      background: #fff0f5;
+      display: none;
+    }
+
+    .profile h3 {
+      color: #ff4f81;
+      text-align: center;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .heart {
+      text-align: center;
+      font-size: 30px;
+    }
   </style>
-</head><body><header>
+</head>
+
+<body>
+
+<header>
   <h1>💕 Запознай.me</h1>
   <p>Намери нови хора и създай истински запознанства.</p>
-</header><div class="box">
-  <h2>Създай профил</h2>  <input type="text" id="name" placeholder="Твоето име">
-  <input type="number" id="age" placeholder="Възраст">
-  <input type="text" id="city" placeholder="Град"><button onclick="createProfile()">Създай профил</button>
+</header>
 
-  <div id="message"></div>
-</div><script>
-  function createProfile() {
-    const name = document.getElementById("name").value;
-    const age = document.getElementById("age").value;
-    const city = document.getElementById("city").value;
+<div class="box">
 
-    if (!name || !age || !city) {
-      document.getElementById("message").textContent =
-        "Моля, попълни всички полета.";
+  <div id="registration">
+
+    <div class="heart">💕</div>
+
+    <h2>Създай своя профил</h2>
+
+    <label>Име</label>
+    <input
+      type="text"
+      id="name"
+      placeholder="Например: Елеонора"
+    >
+
+    <label>Възраст</label>
+    <input
+      type="number"
+      id="age"
+      placeholder="Твоята възраст"
+      min="18"
+      max="100"
+    >
+
+    <label>Град</label>
+    <input
+      type="text"
+      id="city"
+      placeholder="Например: София"
+    >
+
+    <label>Пол</label>
+    <select id="gender">
+      <option value="">Избери</option>
+      <option value="Жена">Жена</option>
+      <option value="Мъж">Мъж</option>
+      <option value="Друго">Друго</option>
+    </select>
+
+    <label>Кого търсиш?</label>
+    <select id="looking_for">
+      <option value="">Избери</option>
+      <option value="Мъж">Мъж</option>
+      <option value="Жена">Жена</option>
+      <option value="Всички">Всички</option>
+    </select>
+
+    <label>За себе си</label>
+    <textarea
+      id="bio"
+      placeholder="Напиши няколко думи за себе си..."
+    ></textarea>
+
+    <label>Имейл</label>
+    <input
+      type="email"
+      id="email"
+      placeholder="Твоят имейл"
+    >
+
+    <label>Парола</label>
+    <input
+      type="password"
+      id="password"
+      placeholder="Минимум 6 символа"
+    >
+
+    <label>Повтори паролата</label>
+    <input
+      type="password"
+      id="password2"
+      placeholder="Повтори паролата"
+    >
+
+    <button onclick="register()">
+      💕 Създай профила ми
+    </button>
+
+    <div id="message"></div>
+
+  </div>
+
+  <div id="profile" class="profile">
+
+    <div class="heart">💗</div>
+
+    <h3>Профилът ти е създаден!</h3>
+
+    <p><strong>Име:</strong> <span id="pName"></span></p>
+    <p><strong>Възраст:</strong> <span id="pAge"></span></p>
+    <p><strong>Град:</strong> <span id="pCity"></span></p>
+    <p><strong>Пол:</strong> <span id="pGender"></span></p>
+    <p><strong>Търси:</strong> <span id="pLooking"></span></p>
+    <p><strong>За себе си:</strong></p>
+    <p id="pBio"></p>
+
+    <button class="secondary" onclick="logout()">
+      Изход
+    </button>
+
+  </div>
+
+</div>
+
+<script>
+
+  /*
+    ВАЖНО:
+    Тук постави Project URL и Publishable/anon key
+    от твоя Supabase проект.
+
+    НЕ използвай Service Role key.
+  */
+
+  const SUPABASE_URL = "https://shlwyiawfyyzyapcfmcu.supabase.co";
+
+  const SUPABASE_KEY = "ПОСТАВИ_ТУК_ТВОЯ_PUBLISHABLE_ИЛИ_ANON_KEY";
+
+  const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+
+
+  async function register() {
+
+    const name = document.getElementById("name").value.trim();
+    const age = Number(document.getElementById("age").value);
+    const city = document.getElementById("city").value.trim();
+    const gender = document.getElementById("gender").value;
+    const lookingFor = document.getElementById("looking_for").value;
+    const bio = document.getElementById("bio").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    const password2 = document.getElementById("password2").value;
+
+    const message = document.getElementById("message");
+
+    message.textContent = "";
+    message.style.color = "#ff4f81";
+
+
+    if (!name || !age || !city || !gender ||
+        !lookingFor || !email || !password || !password2) {
+
+      message.textContent =
+        "Моля, попълни всички задължителни полета.";
+
       return;
     }
 
-    document.getElementById("message").textContent =
-      "Добре дошла, " + name + "! Профилът ти е създаден. 💕";
-  }
-</script></body>
-</html>
+
+    if (age < 18) {
+
+      message.textContent =
+        "Регистрацията е само за лица над 18 години.";
+
+      return;
+    }
+
+
+    if (password.length < 6) {
+
+      message.textContent =
+        "Паролата трябва да бъде поне 6 символа.";
+
+      return;
+    }
+
+
+    if (password !== password2) {
+
+      message.textContent =
+        "Двете пароли не съвпадат.";
+
+      return;
+    }
+
+
+    message.textContent =
+      "Създаваме профила ти...";
+
+
+    try {
+
+      const { data: authData, error: authError } =
+        await supabaseClient.auth.signUp({
+          email: email,
+          password: password
+        });
+
+
+      if (authError) {
+
+        message.textContent =
+          "Грешка: " + authError.message;
+
+        return;
+      }
+
+
+      if (!authData.user) {
+
+        message.textContent =
+          "Профилът не можа да бъде създаден.";
+
+        return;
+      }
+
+
+      const userId = authData.user.id;
+
+
+      const { error: profileError } =
+        await supabaseClient
+          .from("profiles")
+          .insert({
+            id: userId,
+            name: name,
+            age: age,
+            city: city,
+            gender: gender,
+            looking_for: lookingFor,
+            bio: bio,
+            email: email
+          });
+
+
+      if (profileError) {
+
+        message.textContent =
+          "Потребителят е създаден, но профилът не можа да се запише: "
+          + profileError.message;
+
+        return;
+      }
+
+
+      message.textContent =
+        "Добре дошла, " + name + "! 💕";
+
+
+      document.getElementById("registration")
+        .style.display = "none";
+
+      document.getElementById("profile")
+        .style.display = "block";
+
+
+      document.getElementById("pName").textContent = name;
+      document.getElementById("pAge").textContent = age;
+      document.getElementById("pCity").textContent = city;
+      document.getElementById("pGender").textContent = gender;
+      document.getElementById("pLooking").textContent = lookingFor;
+      document.getElementById("pBio").textContent =
+        bio || "Все още няма описание.";
+
+    }
+
+   
