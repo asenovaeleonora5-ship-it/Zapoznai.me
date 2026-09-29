@@ -8,193 +8,106 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: #f7f0f5;
-      color: #333;
+      background: #f5f5f5;
+      color: #222;
     }
 
     header {
-      background: linear-gradient(135deg, #ff4f9a, #8e44ad);
+      background: #ff4f81;
       color: white;
-      padding: 22px 15px;
+      padding: 18px;
       text-align: center;
     }
 
     header h1 {
       margin: 0;
-      font-size: 30px;
-    }
-
-    header p {
-      margin: 6px 0 0;
+      font-size: 28px;
     }
 
     .container {
-      max-width: 700px;
-      margin: 20px auto;
-      padding: 0 15px 40px;
-    }
-
-    .box {
-      background: white;
-      border-radius: 18px;
-      padding: 22px;
-      margin-bottom: 18px;
-      box-shadow: 0 3px 12px rgba(0,0,0,.08);
-    }
-
-    h2 {
-      color: #8e44ad;
-      text-align: center;
-    }
-
-    label {
-      display: block;
-      margin-top: 12px;
-      font-weight: bold;
-    }
-
-    input,
-    select,
-    textarea {
-      width: 100%;
-      padding: 13px;
-      margin-top: 6px;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      font-size: 16px;
-    }
-
-    textarea {
-      min-height: 100px;
-      resize: vertical;
-    }
-
-    button.main {
-      width: 100%;
-      padding: 14px;
-      margin-top: 18px;
-      border: 0;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #ff4f9a, #8e44ad);
-      color: white;
-      font-size: 17px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    button.secondary {
-      width: 100%;
-      padding: 13px;
-      margin-top: 10px;
-      border: 0;
-      border-radius: 12px;
-      background: #eee;
-      color: #555;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    .message {
-      margin-top: 12px;
-      padding: 10px;
-      border-radius: 10px;
-      text-align: center;
-      font-weight: bold;
-    }
-
-    .menu {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-
-    .card {
-      background: white;
-      border-radius: 18px;
-      padding: 25px 15px;
-      text-align: center;
-      box-shadow: 0 3px 12px rgba(0,0,0,.08);
-      cursor: pointer;
-    }
-
-    .icon {
-      font-size: 38px;
-    }
-
-    .card h3 {
-      margin: 7px 0;
-      color: #8e44ad;
-    }
-
-    .card p {
-      margin: 0;
-      color: #777;
-      font-size: 14px;
-    }
-
-    .profile {
-      border: 1px solid #eee;
-      border-radius: 14px;
+      max-width: 600px;
+      margin: auto;
       padding: 15px;
-      margin-top: 12px;
-      background: #fff;
     }
 
-    .profile h3 {
-      color: #8e44ad;
+    .profile-card {
+      background: white;
+      border-radius: 18px;
+      padding: 20px;
+      margin-bottom: 15px;
+      box-shadow: 0 3px 12px rgba(0,0,0,.08);
+    }
+
+    .profile-card h2 {
       margin-top: 0;
+      color: #ff4f81;
+    }
+
+    .info {
+      margin: 7px 0;
+    }
+
+    .description {
+      margin-top: 15px;
+      padding: 12px;
+      background: #f8f8f8;
+      border-radius: 10px;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    button {
+      flex: 1;
+      border: none;
+      padding: 12px 8px;
+      border-radius: 12px;
+      font-size: 14px;
+      cursor: pointer;
+      color: white;
+    }
+
+    .like {
+      background: #ff4f81;
+    }
+
+    .friend {
+      background: #4b8df8;
+    }
+
+    .chat {
+      background: #35b86b;
+    }
+
+    button:hover {
+      opacity: .85;
+    }
+
+    #status {
+      text-align: center;
+      margin: 15px 0;
+      font-weight: bold;
     }
 
     .logout {
+      background: #333;
+      margin-top: 15px;
       width: 100%;
-      padding: 14px;
-      margin-top: 20px;
-      border: 0;
-      border-radius: 12px;
-      background: #444;
-      color: white;
-      font-size: 16px;
     }
 
-    .bottom {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
+    .empty {
       background: white;
-      display: flex;
-      justify-content: space-around;
-      padding: 9px 5px;
-      box-shadow: 0 -2px 10px rgba(0,0,0,.12);
-    }
-
-    .bottom button {
-      border: 0;
-      background: none;
-      font-size: 12px;
-      color: #555;
-    }
-
-    .bottom span {
-      display: block;
-      font-size: 23px;
-    }
-
-    @media (max-width: 450px) {
-      .menu {
-        grid-template-columns: 1fr 1fr;
-      }
+      padding: 25px;
+      border-radius: 15px;
+      text-align: center;
     }
   </style>
 </head>
@@ -202,493 +115,214 @@
 <body>
 
 <header>
-  <h1>💗 Запознай.me</h1>
-  <p>Нови хора. Нови приятелства. Нова любов.</p>
+  <h1>❤️ Запознай.me</h1>
+  <div>Нови хора • Приятелства • Любов</div>
 </header>
 
 <div class="container">
 
-  <!-- ВХОД / РЕГИСТРАЦИЯ -->
-  <div id="authSection" class="box">
+  <div id="status">Зареждане...</div>
 
-    <div id="loginBox">
-      <h2>Вход ❤️</h2>
+  <div id="profiles"></div>
 
-      <label>Имейл</label>
-      <input id="loginEmail" type="email" placeholder="Твоят имейл">
-
-      <label>Парола</label>
-      <input id="loginPassword" type="password" placeholder="Твоята парола">
-
-      <button class="main" onclick="login()">Вход</button>
-
-      <button class="secondary" onclick="showRegister()">
-        Нямаш профил? Регистрация
-      </button>
-
-      <div id="loginMessage"></div>
-    </div>
-
-
-    <div id="registerBox" class="hidden">
-      <h2>Създай профил 💗</h2>
-
-      <label>Име</label>
-      <input id="regName" type="text" placeholder="Твоето име">
-
-      <label>Възраст</label>
-      <input id="regAge" type="number" min="18" max="100" placeholder="Възраст">
-
-      <label>Град</label>
-      <input id="regCity" type="text" placeholder="Твоят град">
-
-      <label>Пол</label>
-      <select id="regGender">
-        <option value="">Избери</option>
-        <option value="Жена">Жена</option>
-        <option value="Мъж">Мъж</option>
-        <option value="Друго">Друго</option>
-      </select>
-
-      <label>Кого търсиш?</label>
-      <select id="regLooking">
-        <option value="">Избери</option>
-        <option value="Мъж">Мъж</option>
-        <option value="Жена">Жена</option>
-        <option value="Всички">Всички</option>
-      </select>
-
-      <label>Описание</label>
-      <textarea id="regDescription"
-        placeholder="Разкажи малко за себе си..."></textarea>
-
-      <label>Имейл</label>
-      <input id="regEmail" type="email" placeholder="Имейл">
-
-      <label>Парола</label>
-      <input id="regPassword" type="password" placeholder="Минимум 6 символа">
-
-      <label>Потвърди паролата</label>
-      <input id="regPassword2" type="password" placeholder="Повтори паролата">
-
-      <button class="main" onclick="register()">
-        Създай профил
-      </button>
-
-      <button class="secondary" onclick="showLogin()">
-        Вече имам профил → Вход
-      </button>
-
-      <div id="registerMessage"></div>
-    </div>
-
-  </div>
-
-
-  <!-- НАЧАЛНА СТРАНИЦА -->
-  <div id="homeSection" class="hidden">
-
-    <div class="box">
-      <h2>Добре дошъл! ❤️</h2>
-      <p id="welcomeText">Зареждаме твоя профил...</p>
-    </div>
-
-    <div class="menu">
-
-      <div class="card" onclick="openProfile()">
-        <div class="icon">👤</div>
-        <h3>Моят профил</h3>
-        <p>Виж профила си</p>
-      </div>
-
-      <div class="card" onclick="searchPeople()">
-        <div class="icon">🔎</div>
-        <h3>Търси хора</h3>
-        <p>Открий нови хора</p>
-      </div>
-
-      <div class="card" onclick="showLikes()">
-        <div class="icon">❤️</div>
-        <h3>Харесвания</h3>
-        <p>Кой те е харесал</p>
-      </div>
-
-      <div class="card" onclick="showFriends()">
-        <div class="icon">👥</div>
-        <h3>Приятели</h3>
-        <p>Твоите приятели</p>
-      </div>
-
-      <div class="card" onclick="openChat()">
-        <div class="icon">💬</div>
-        <h3>Чат</h3>
-        <p>Пиши на хора</p>
-      </div>
-
-      <div class="card" onclick="showNotifications()">
-        <div class="icon">🔔</div>
-        <h3>Известия</h3>
-        <p>Твоите известия</p>
-      </div>
-
-    </div>
-
-    <button class="logout" onclick="logout()">🚪 Изход</button>
-
-  </div>
+  <button class="logout" onclick="logout()">Изход</button>
 
 </div>
-
-
-<div id="bottomMenu" class="bottom hidden">
-
-  <button onclick="goHome()">
-    <span>🏠</span>
-    Начало
-  </button>
-
-  <button onclick="searchPeople()">
-    <span>🔎</span>
-    Търси
-  </button>
-
-  <button onclick="openChat()">
-    <span>💬</span>
-    Чат
-  </button>
-
-  <button onclick="openProfile()">
-    <span>👤</span>
-    Профил
-  </button>
-
-</div>
-
 
 <script>
-
-  const SUPABASE_URL =
-    "https://shlwyiawfyyzyapcfmcu.supabase.co";
+  const SUPABASE_URL = "https://shlwyiawfyyzyapcfmcu.supabase.co";
 
   const SUPABASE_KEY =
     "sb_publishable__XLJp2i5KQoRg03MeEs_VQ_9-mg5gLD";
 
   const supabaseClient =
-    supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+  let currentUser = null;
 
-  function showMessage(element, text, success = false) {
-    element.innerText = text;
-    element.className = "message";
-    element.style.background = success ? "#e8f8ee" : "#ffe8ee";
-    element.style.color = success ? "#18733a" : "#a40035";
+  async function start() {
+    const { data, error } =
+      await supabaseClient.auth.getUser();
+
+    if (error || !data.user) {
+      document.getElementById("status").innerHTML =
+        "Моля, влезте в профила си.";
+      return;
+    }
+
+    currentUser = data.user;
+
+    document.getElementById("status").innerHTML =
+      "Добре дошли! ❤️";
+
+    loadProfiles();
   }
 
+  async function loadProfiles() {
 
-  function showRegister() {
-    document.getElementById("loginBox").classList.add("hidden");
-    document.getElementById("registerBox").classList.remove("hidden");
-  }
-
-
-  function showLogin() {
-    document.getElementById("registerBox").classList.add("hidden");
-    document.getElementById("loginBox").classList.remove("hidden");
-  }
-
-
-  async function register() {
-
-    const name =
-      document.getElementById("regName").value.trim();
-
-    const age =
-      document.getElementById("regAge").value;
-
-    const city =
-      document.getElementById("regCity").value.trim();
-
-    const gender =
-      document.getElementById("regGender").value;
-
-    const looking =
-      document.getElementById("regLooking").value;
-
-    const description =
-      document.getElementById("regDescription").value.trim();
-
-    const email =
-      document.getElementById("regEmail").value.trim();
-
-    const password =
-      document.getElementById("regPassword").value;
-
-    const password2 =
-      document.getElementById("regPassword2").value;
-
-    const msg =
-      document.getElementById("registerMessage");
-
-
-    if (!name || !age || !city || !gender ||
-        !looking || !email || !password) {
-
-      showMessage(msg, "Моля, попълни всички задължителни полета.");
-      return;
-    }
-
-
-    if (Number(age) < 18) {
-      showMessage(msg, "Регистрацията е само за лица над 18 години.");
-      return;
-    }
-
-
-    if (password.length < 6) {
-      showMessage(msg, "Паролата трябва да е поне 6 символа.");
-      return;
-    }
-
-
-    if (password !== password2) {
-      showMessage(msg, "Паролите не съвпадат.");
-      return;
-    }
-
-
-    showMessage(msg, "Създаваме профила...", true);
-
-
-    const {
-      data,
-      error
-    } = await supabaseClient.auth.signUp({
-      email: email,
-      password: password
-    });
-
+    const { data, error } =
+      await supabaseClient
+        .from("profiles")
+        .select("*")
+        .neq("id", currentUser.id);
 
     if (error) {
-      showMessage(msg, error.message);
+      console.log(error);
+
+      document.getElementById("profiles").innerHTML =
+        '<div class="empty">Грешка при зареждане на профилите.</div>';
+
       return;
     }
 
+    const container =
+      document.getElementById("profiles");
 
-    if (!data.user) {
-      showMessage(
-        msg,
-        "Потребителят не беше създаден. Опитай отново."
-      );
+    container.innerHTML = "";
+
+    if (!data || data.length === 0) {
+      container.innerHTML =
+        '<div class="empty">Все още няма други профили. ❤️</div>';
+
       return;
     }
 
+    data.forEach(profile => {
+
+      const card =
+        document.createElement("div");
+
+      card.className = "profile-card";
+
+      card.innerHTML = `
+        <h2>${escapeHtml(profile.name || "Потребител")}</h2>
+
+        <div class="info">
+          🎂 Възраст:
+          ${escapeHtml(profile.age || "—")}
+        </div>
+
+        <div class="info">
+          📍 Град:
+          ${escapeHtml(profile.city || "—")}
+        </div>
+
+        <div class="info">
+          👤 Пол:
+          ${escapeHtml(profile.gender || "—")}
+        </div>
+
+        <div class="info">
+          🔎 Търси:
+          ${escapeHtml(profile.looking_for || "—")}
+        </div>
+
+        <div class="description">
+          ${escapeHtml(profile.description || "Няма описание.")}
+        </div>
+
+        <div class="buttons">
+
+          <button
+            class="like"
+            onclick="likeUser('${profile.id}', this)">
+            ❤️ Харесвам
+          </button>
+
+          <button
+            class="friend"
+            onclick="addFriend('${profile.id}', this)">
+            👥 Приятел
+          </button>
+
+          <button
+            class="chat"
+            onclick="openChat('${profile.id}')">
+            💬 Чат
+          </button>
+
+        </div>
+      `;
+
+      container.appendChild(card);
+    });
+  }
+
+  async function likeUser(userId, button) {
+
+    if (!currentUser) return;
+
+    const { error } =
+      await supabaseClient
+        .from("likes")
+        .insert({
+          user_id: currentUser.id,
+          liked_user_id: userId
+        });
+
+    if (error) {
+
+      if (error.code === "23505") {
+        button.innerText = "❤️ Харесано";
+        return;
+      }
+
+      alert("Грешка при харесването.");
+      console.log(error);
+      return;
+    }
+
+    button.innerText = "❤️ Харесано";
+    button.disabled = true;
+  }
+
+  async function addFriend(userId, button) {
+
+    if (!currentUser) return;
 
     /*
-      ВАЖНО:
-      Тук НЕ записваме email в profiles.
-      Записваме само колоните на профила.
+      Ако все още нямаш таблица friends,
+      временно показваме съобщение.
+      След това ще направим истинската система
+      за приятелски заявки.
     */
 
-    const profileData = {
-      id: data.user.id,
-      name: name,
-      age: Number(age),
-      city: city,
-      gender: gender,
-      looking_for: looking,
-      description: description
-    };
+    alert("Изпратена е заявка за приятелство! 👥");
 
+    button.innerText = "✓ Изпратено";
+    button.disabled = true;
+  }
 
-    const {
-      error: profileError
-    } = await supabaseClient
-      .from("profiles")
-      .insert(profileData);
+  function openChat(userId) {
 
-
-    if (profileError) {
-
-      showMessage(
-        msg,
-        "Потребителят е създаден, но профилът не беше записан: "
-        + profileError.message
-      );
-
-      return;
-    }
-
-
-    showMessage(
-      msg,
-      "Профилът е създаден успешно! ❤️",
-      true
+    alert(
+      "Чатът с този потребител ще бъде отворен тук. 💬"
     );
 
-
-    setTimeout(() => {
-      showHome();
-    }, 1000);
+    /*
+      Следващата стъпка ще бъде истинският чат
+      със съобщения в таблицата messages.
+    */
   }
-
-
-  async function login() {
-
-    const email =
-      document.getElementById("loginEmail").value.trim();
-
-    const password =
-      document.getElementById("loginPassword").value;
-
-    const msg =
-      document.getElementById("loginMessage");
-
-
-    if (!email || !password) {
-      showMessage(msg, "Въведи имейл и парола.");
-      return;
-    }
-
-
-    const {
-      error
-    } = await supabaseClient.auth.signInWithPassword({
-      email: email,
-      password: password
-    });
-
-
-    if (error) {
-      showMessage(msg, "Грешка при вход: " + error.message);
-      return;
-    }
-
-
-    showHome();
-  }
-
-
-  async function showHome() {
-
-    document
-      .getElementById("authSection")
-      .classList.add("hidden");
-
-    document
-      .getElementById("homeSection")
-      .classList.remove("hidden");
-
-    document
-      .getElementById("bottomMenu")
-      .classList.remove("hidden");
-
-    await loadProfile();
-  }
-
-
-  async function loadProfile() {
-
-    const {
-      data: { user }
-    } = await supabaseClient.auth.getUser();
-
-
-    if (!user) {
-      return;
-    }
-
-
-    const {
-      data,
-      error
-    } = await supabaseClient
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .maybeSingle();
-
-
-    if (error) {
-      document.getElementById("welcomeText").innerText =
-        "Профилът е зареден.";
-      return;
-    }
-
-
-    if (data && data.name) {
-
-      document.getElementById("welcomeText").innerText =
-        "Здравей, " + data.name +
-        "! Радваме се, че си тук. ❤️";
-
-    } else {
-
-      document.getElementById("welcomeText").innerText =
-        "Добре дошъл в Запознай.me! ❤️";
-    }
-  }
-
-
-  async function checkUser() {
-
-    const {
-      data: { user }
-    } = await supabaseClient.auth.getUser();
-
-    if (user) {
-      showHome();
-    }
-  }
-
-
-  function openProfile() {
-    alert("👤 Тук ще добавим подробния ти профил.");
-  }
-
-
-  function searchPeople() {
-    alert("🔎 Тук ще добавим търсене и разглеждане на профили.");
-  }
-
-
-  function showLikes() {
-    alert("❤️ Тук ще добавим харесванията.");
-  }
-
-
-  function showFriends() {
-    alert("👥 Тук ще добавим приятелите.");
-  }
-
-
-  function openChat() {
-    alert("💬 Тук ще добавим чата.");
-  }
-
-
-  function showNotifications() {
-    alert("🔔 Тук ще добавим известията.");
-  }
-
-
-  function goHome() {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth"
-    });
-  }
-
 
   async function logout() {
 
     await supabaseClient.auth.signOut();
 
-    location.reload();
+    window.location.reload();
   }
 
+  function escapeHtml(value) {
 
-  checkUser();
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
 
+  start();
 </script>
 
 </body>
